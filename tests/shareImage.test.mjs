@@ -40,7 +40,7 @@ test("PNG rendering omits encode plaintext, preserves bytes and labels excerpts"
   assert.equal(canvas.width, 1600);
   assert.equal(canvas.height, 900);
   assert.deepEqual(fontLoads, ["46px NokiaTitle", "21px NokiaBody"]);
-  assert.equal(calls.find(call => call.text === "BITCOIN HEX").font, "400 46px NokiaTitle");
+  assert.equal(calls.find(call => call.text === "ENIGMA").font, "400 46px NokiaTitle");
   assert.equal(calls.some(call => /PRIVATE|Never|YOUR TEXT|READABLE BYTES/.test(call.text)), false);
   const renderedBytes = calls.filter(call => /^[0-9A-F]{2}$/.test(call.text));
   assert.equal(renderedBytes.length, 384);

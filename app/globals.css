@@ -100,7 +100,6 @@ h1, h2, .terminal-subtitle { font-family: var(--font-nokia-title), monospace; fo
 .terminal-command { display: inline-block; }
 .terminal-cursor { display: inline-block; width: .65em; height: 1em; margin-left: .55em; background: currentColor; vertical-align: -.15em; }
 h1 { font-size: clamp(44px, 5.8vw, 80px); line-height: 1.08; letter-spacing: .045em; word-spacing: .08em; margin: 4px 0 8px; }
-.title-spaced { display: inline-block; margin-right: .12em; }
 .terminal-subtitle { font-size: clamp(17px, 2vw, 24px); letter-spacing: .08em; margin: 0 0 20px; }
 .terminal-subtitle span { margin: 0 7px; color: var(--muted); }
 .intro { font-size: 12px; line-height: 1.85; margin: 0; max-width: 52ch; }
