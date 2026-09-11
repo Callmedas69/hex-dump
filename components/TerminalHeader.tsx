@@ -29,7 +29,7 @@ export function TerminalHeader({ motion, onToggleMotion }: { motion: boolean; on
       <div className="page-header">
         <div className="terminal-identity">
           <p className="command-line" aria-hidden="true"><span className="terminal-command">C:\HEX&gt; RUN CODEC.EXE</span><span className="terminal-cursor" /></p>
-          <h1>BITCOIN HEX</h1>
+          <h1>BI<span className="title-spaced">T</span><span className="title-spaced">C</span><span className="title-spaced">O</span>IN HEX</h1>
           <p className="terminal-subtitle">ENCODER <span aria-hidden="true">/</span> DECODER</p>
           <p className="intro">Messages hide in plain sight.<br />Turn words into bytes. Read between the lines.</p>
         </div>
