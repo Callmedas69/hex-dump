@@ -57,8 +57,7 @@ export function TerminalHeader({
     <header className="terminal-header" ref={root}>
       <div className="terminal-titlebar">
         <span>
-          <span className="status-square" aria-hidden="true" /> FIELD TERMINAL /
-          BITCOIN DIVISION
+          <span className="status-square" aria-hidden="true" /> FIELD TERMINAL
         </span>
         <div className="terminal-tools">
           <button
@@ -77,10 +76,10 @@ export function TerminalHeader({
       <div className="page-header">
         <div className="terminal-identity">
           <p className="command-line" aria-hidden="true">
-            <span className="terminal-command">C:\HEX&gt; RUN CODEC.EXE</span>
+            <span className="terminal-command">C:\HEXONION&gt; RUN CODEC.EXE</span>
             <span className="terminal-cursor" />
           </p>
-          <h1>ENIGMA</h1>
+          <h1>HexOnion</h1>
           <p className="terminal-subtitle">
             ENCODER <span aria-hidden="true">/</span> DECODER
           </p>

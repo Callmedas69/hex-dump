@@ -51,7 +51,7 @@ export async function renderShareImage(snapshot: ShareSnapshot): Promise<Blob> {
     for (let row = 0; row <= column; row++) ctx.fillRect(1380 + column * 24, 137 - row * 18, 17, 12);
   }
   ctx.font = `400 46px ${titleFont}`;
-  ctx.fillText("ENIGMA", 75, 115);
+  ctx.fillText("HEXONION", 75, 115);
   ctx.fillStyle = "#354622";
   ctx.font = `20px ${font}`;
   ctx.fillText(`${snapshot.mode.toUpperCase()} / ${snapshot.bytes.length.toLocaleString()} BYTES`, 75, 160);

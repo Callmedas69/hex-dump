@@ -1,4 +1,4 @@
-# Bitcoin Hex Encoder & Decoder
+# HexOnion
 
 A Bitcoin byte inspector with text-to-hex encoding, ASCII/UTF-8 decoding, readable text discovery, and a meme-token access gate. The byte grid follows the [original screenshot](agent-plans/references/bitcoin-hex-dump-inspiration.png).
 

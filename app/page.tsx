@@ -78,7 +78,7 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
 
   return (
     <section ref={root} className="workspace">
-      <div className="workspace-bar reveal"><span><span className="status-square" aria-hidden="true" /> HEX WORKSPACE / SESSION ACTIVE</span><button type="button" className="small" aria-pressed={sound} onClick={() => setSound(!sound)}>Sound {sound ? "on" : "off"}</button></div>
+      <div className="workspace-bar reveal"><span><span className="status-square" aria-hidden="true" /> HEXONION WORKSPACE / SESSION ACTIVE</span><button type="button" className="small" aria-pressed={sound} onClick={() => setSound(!sound)}>Sound {sound ? "on" : "off"}</button></div>
       <div className="tabs reveal" role="tablist" aria-label="Conversion mode">
         <button type="button" role="tab" aria-selected={mode === "decode"} className={mode === "decode" ? "active" : ""} onClick={() => { setMode("decode"); resetSelection(); }}>Decode hex → text</button>
         <button type="button" role="tab" aria-selected={mode === "encode"} className={mode === "encode" ? "active" : ""} onClick={() => { setMode("encode"); resetSelection(); }}>Encode text → hex</button>
@@ -124,5 +124,5 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
 
 export default function Home() {
   const [motion, setMotion] = useState(true);
-  return <main className="shell" data-motion={motion ? "on" : "off"}><TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} /><SecurityGate>{active => <HexWorkspace active={active} motion={motion} />}</SecurityGate><footer><span>HEX / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Text becomes bytes. Bytes reveal stories.</span></footer></main>;
+  return <main className="shell" data-motion={motion ? "on" : "off"}><TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} /><SecurityGate>{active => <HexWorkspace active={active} motion={motion} />}</SecurityGate><footer><span>HEXONION / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Text becomes bytes. Bytes reveal stories.</span></footer></main>;
 }

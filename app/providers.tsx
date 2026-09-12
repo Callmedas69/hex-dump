@@ -14,7 +14,7 @@ const transports = {
 };
 const chains = [robinhood] as const;
 const config = projectId
-  ? getDefaultConfig({ appName: "Bitcoin Hex", projectId, chains, transports, ssr: true })
+  ? getDefaultConfig({ appName: "HexOnion", projectId, chains, transports, ssr: true })
   : createConfig({ chains, connectors: [injected()], transports, ssr: true });
 const theme = lightTheme({ accentColor: "#17230f", accentColorForeground: "#a5be68", borderRadius: "none", overlayBlur: "small" });
 theme.fonts.body = "var(--font-nokia-body), monospace";
