@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   title,
   description,
   applicationName: "HexOnion",
+  appleWebApp: {
+    title: "Onion",
+  },
   openGraph: {
     title,
     description,
