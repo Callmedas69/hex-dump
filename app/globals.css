@@ -97,7 +97,7 @@ h1, h2, .terminal-subtitle { font-family: var(--font-nokia-title), monospace; fo
 .page-header { padding: 26px 30px 28px; margin: 0; border: 0; gap: 36px; }
 .terminal-identity { min-width: 0; }
 .identity-lockup { display: flex; align-items: center; gap: 26px; min-width: 0; }
-.hexonion-logo { width: clamp(112px, 14vw, 190px); height: auto; object-fit: contain; mix-blend-mode: screen; opacity: .92; }
+.hexonion-logo { width: clamp(112px, 14vw, 190px); height: auto; object-fit: contain; mix-blend-mode: multiply; opacity: .9; image-rendering: pixelated; filter: contrast(1.25) saturate(.7); }
 .command-line { display: flex; align-items: center; font-size: 12px; line-height: 1.8; color: var(--muted); margin: 0 0 16px; }
 .terminal-command { display: inline-block; }
 .terminal-cursor { display: inline-block; width: .65em; height: 1em; margin-left: .55em; background: currentColor; vertical-align: -.15em; }
