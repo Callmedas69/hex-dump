@@ -2,7 +2,7 @@
 
 ## Vercel and Neon
 
-Create a Neon Postgres project and add its pooled connection string as `DATABASE_URL` in Vercel for Production, Preview, and Development as appropriate. Deploy the Next.js project to Vercel and set `NEXT_PUBLIC_DEAD_DROP_ONION_URL` after the onion hostname exists.
+Create a Neon Postgres project and add its pooled connection string as `DATABASE_URL` in Vercel for Production, Preview, and Development as appropriate. Deploy the Next.js project to Vercel at `hexonion.0xdas.dev` and set `NEXT_PUBLIC_DEAD_DROP_ONION_URL` after the onion hostname exists.
 
 The first invitation can be generated from a trusted operator shell with the same `DATABASE_URL`:
 
@@ -25,3 +25,4 @@ Do not redirect onion requests to the public domain. The proxy must preserve the
 ## Release checks
 
 Verify both directions (HTTPS deposit → Tor retrieval and Tor deposit → HTTPS retrieval), expiration, restart persistence, CSP/no-store headers, and that no plaintext or URL fragment is sent in requests or logs. Do not publish the onion hostname until these checks pass.
+
