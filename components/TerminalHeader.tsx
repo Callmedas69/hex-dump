@@ -78,7 +78,7 @@ export function TerminalHeader({
         <div className="identity-lockup">
           <Image
             className="hexonion-logo"
-            src="/hexonion-logo.webp"
+            src="/hexonion-logo-generated.png"
             alt="HexOnion logo"
             width={220}
             height={220}
