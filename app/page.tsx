@@ -8,6 +8,7 @@ import { GENESIS_BLOCK_HEX, GENESIS_MESSAGE } from "../lib/fixtures/bitcoinGenes
 import { SecurityGate } from "../components/SecurityGate";
 import ShareDialog from "../components/ShareDialog";
 import { TerminalHeader } from "../components/TerminalHeader";
+import { Providers } from "./providers";
 
 gsap.registerPlugin(useGSAP);
 const PAGE_BYTES = 512;
@@ -124,5 +125,5 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
 
 export default function Home() {
   const [motion, setMotion] = useState(true);
-  return <main className="shell" data-motion={motion ? "on" : "off"}><TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} /><SecurityGate>{active => <HexWorkspace active={active} motion={motion} />}</SecurityGate><footer><span>HEXONION / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Text becomes bytes. Bytes reveal stories.</span></footer></main>;
+  return <Providers><main className="shell" data-motion={motion ? "on" : "off"}><TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} /><SecurityGate>{active => <HexWorkspace active={active} motion={motion} />}</SecurityGate><footer><span>HEXONION / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Text becomes bytes. Bytes reveal stories.</span></footer></main></Providers>;
 }

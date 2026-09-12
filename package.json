@@ -6,11 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "invitation": "node scripts/generate-invitation.mjs",
+    "revoke-invitation": "node scripts/revoke-invitation.mjs",
     "lint": "eslint",
-    "test": "node --conditions=react-server --experimental-strip-types --test tests/*.test.mjs"
+    "test": "node --conditions=react-server --experimental-strip-types --test --test-concurrency=1 tests/*.test.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
+    "@neondatabase/serverless": "^1.1.0",
     "@rainbow-me/rainbowkit": "^2.2.11",
     "@tanstack/react-query": "^5.102.8",
     "@x402/core": "^2.25.0",

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Providers } from "./providers";
 
 const nokiaTitle = localFont({
   src: "../public/Nokian_title.ttf",
@@ -49,7 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${nokiaTitle.variable} ${nokiaBody.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );
