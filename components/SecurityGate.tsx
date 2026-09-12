@@ -55,7 +55,7 @@ export function SecurityGate({ children }: { children: React.ReactNode | ((grant
         {bypass && <button type="button" className="small" onClick={() => setSandbox(false)}>Exit sandbox</button>}
       </div> : <section className="gate" aria-label="Token access">
         <div className="gate-content"><span className="eyebrow">ACCESS CONTROL / TOKEN HOLDING</span><h2>{!isConnected ? "IDENTIFY YOURSELF" : query.isFetching && enabled ? "VERIFYING HOLDING" : "CLEARANCE REQUIRED"}</h2>
-          <strong>{development ? "USDG development gate" : "Meme-token access"}</strong>
+          <strong>{development ? "USDG development gate" : `${policy?.symbol ?? "Token"} access`}</strong>
           <p role="status">{status}</p>
           {policy && <p className="gate-meta">Required: {policy.minimumRawBalance === 0n ? "a positive balance of" : `at least ${formatUnits(policy.minimumRawBalance, policy.decimals)}`} {policy.symbol} · {policy.chainId === 4663 ? "Robinhood Chain mainnet" : policy.chainId}</p>}
           <div className="gate-actions">
