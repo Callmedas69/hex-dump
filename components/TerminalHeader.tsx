@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -74,20 +75,30 @@ export function TerminalHeader({
         </div>
       </div>
       <div className="page-header">
-        <div className="terminal-identity">
-          <p className="command-line" aria-hidden="true">
-            <span className="terminal-command">C:\HEXONION&gt; RUN CODEC.EXE</span>
-            <span className="terminal-cursor" />
-          </p>
-          <h1>HexOnion</h1>
-          <p className="terminal-subtitle">
-            ENCODER <span aria-hidden="true">/</span> DECODER
-          </p>
-          <p className="intro">
-            Messages hide in plain sight.
-            <br />
-            Turn words into bytes. Read between the lines.
-          </p>
+        <div className="identity-lockup">
+          <Image
+            className="hexonion-logo"
+            src="/hexonion-logo.webp"
+            alt="HexOnion logo"
+            width={220}
+            height={220}
+            priority
+          />
+          <div className="terminal-identity">
+            <p className="command-line" aria-hidden="true">
+              <span className="terminal-command">C:\HEXONION&gt; RUN CODEC.EXE</span>
+              <span className="terminal-cursor" />
+            </p>
+            <h1>HexOnion</h1>
+            <p className="terminal-subtitle">
+              ENCODER <span aria-hidden="true">/</span> DECODER
+            </p>
+            <p className="intro">
+              Messages hide in plain sight.
+              <br />
+              Turn words into bytes. Read between the lines.
+            </p>
+          </div>
         </div>
         <aside className="session-panel" aria-label="Terminal information">
           <div className="session-heading">
