@@ -17,8 +17,10 @@ test("dead drop crypto rejects a wrong key and tampering", async () => {
   const { envelope, key } = await encryptDeadDrop("classified");
   const wrongKey = (await encryptDeadDrop("other")).key;
   await assert.rejects(() => decryptDeadDrop(envelope, wrongKey));
-  await assert.rejects(() => decryptDeadDrop({ ...envelope, ciphertext: `${envelope.ciphertext.slice(0, -1)}A` }, key));
-  await assert.rejects(() => decryptDeadDrop({ ...envelope, iv: `${envelope.iv.slice(0, -1)}A` }, key));
+  const changedCiphertext = `${envelope.ciphertext[0] === "A" ? "B" : "A"}${envelope.ciphertext.slice(1)}`;
+  const changedIv = `${envelope.iv[0] === "A" ? "B" : "A"}${envelope.iv.slice(1)}`;
+  await assert.rejects(() => decryptDeadDrop({ ...envelope, ciphertext: changedCiphertext }, key));
+  await assert.rejects(() => decryptDeadDrop({ ...envelope, iv: changedIv }, key));
   await assert.rejects(() => decryptDeadDrop({ v: 2, iv: envelope.iv, ciphertext: envelope.ciphertext }, key));
 });
 

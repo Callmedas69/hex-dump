@@ -14,3 +14,11 @@ test("invitation APIs require signed, one-time token-holder authorization", asyn
   assert.match(create, /createHash\("sha256"\)/);
   assert.doesNotMatch(create, /console\.log/);
 });
+
+test("invitation creator explains one-time token handling", async () => {
+  const ui = await readFile(new URL("../components/InvitationCreator.tsx", import.meta.url), "utf8");
+  assert.match(ui, /signMessageAsync/);
+  assert.match(ui, /Create invitation/);
+  assert.match(ui, /will not be shown again/);
+  assert.match(ui, /navigator\.clipboard/);
+});
