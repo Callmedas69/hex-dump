@@ -85,8 +85,8 @@ export async function renderShareImage(snapshot: ShareSnapshot): Promise<Blob> {
   const range = `${(snapshot.baseOffset + excerpt.start).toString(16).padStart(8, "0")}–${(snapshot.baseOffset + excerpt.end - 1).toString(16).padStart(8, "0")}`;
   ctx.fillText(`${excerpt.truncated ? "BYTE EXCERPT" : "BYTE RANGE"} / ${range}`, 75, 760);
   if (wrapped.truncated) ctx.fillText("TEXT EXCERPT — CONTINUES", 875, 760);
-  ctx.fillText("ENCODE. DECODE. DISCOVER.", 75, 805);
+  ctx.fillText("ENCODE. DECODE. DISCOVER.", 75, 790);
   ctx.font = `18px ${font}`;
-  ctx.fillText("Encrypted in your browser", 75, 835);
+  ctx.fillText("Encrypted in your browser", 75, 820);
   return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Could not export the image.")), "image/png"));
 }
