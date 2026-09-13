@@ -11,4 +11,7 @@ test("dead-drop UI supports invitation creation and keyboard-safe retrieval", as
   assert.match(ui, /aria-live/);
   assert.match(ui, /InvitationCreator/);
   assert.match(ui, /href="\/"/);
+  assert.match(ui, /Tor Browser/);
+  assert.match(ui, /complete link/);
+  assert.match(ui, /encrypted message/);
 });

@@ -167,6 +167,9 @@ footer { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px;
 @media (max-width: 600px) { .share-choices { padding:18px; } .share-choice-grid { grid-template-columns:1fr; } .share-choice a { width:100%; text-align:center; } }
 
 .invitation-creator { border: 1px solid var(--line); background: var(--panel); padding: 20px 22px; margin-bottom: 18px; }
+.dead-drop-browser-note { border: 1px dashed var(--line); background: #aec771; color: var(--muted); padding: 12px 16px; margin-bottom: 18px; font-size: 11px; line-height: 1.8; }
+.dead-drop-browser-note strong { color: var(--ink); font-weight: 600; }
+.dead-drop-browser-note code { color: var(--ink); }
 .invitation-creator h2 { margin: 8px 0 5px; font: 400 20px/1.2 var(--font-nokia-title),monospace; letter-spacing: .06em; }
 .invitation-creator p { margin: 0; max-width: 70ch; color: var(--muted); font-size: 11px; line-height: 1.7; }
 .invitation-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 16px; }
