@@ -20,6 +20,7 @@ test("invitation creator explains one-time token handling", async () => {
   const ui = await readFile(new URL("../components/InvitationCreator.tsx", import.meta.url), "utf8");
   assert.match(ui, /signMessageAsync/);
   assert.match(ui, /Create invitation/);
-  assert.match(ui, /will not be shown again/);
-  assert.match(ui, /navigator\.clipboard/);
+  assert.match(ui, /onCreated/);
+  assert.match(ui, /ready in the sending field/);
+  assert.doesNotMatch(ui, /Copy invitation code/);
 });
