@@ -83,8 +83,8 @@ export async function renderShareImage(snapshot: ShareSnapshot): Promise<Blob> {
   ctx.fillStyle = "#354622";
   ctx.font = `18px ${font}`;
   const range = `${(snapshot.baseOffset + excerpt.start).toString(16).padStart(8, "0")}–${(snapshot.baseOffset + excerpt.end - 1).toString(16).padStart(8, "0")}`;
-  ctx.fillText(`${excerpt.truncated ? "BYTE EXCERPT" : "BYTE RANGE"} / ${range}`, 75, 790);
-  if (wrapped.truncated) ctx.fillText("TEXT EXCERPT — CONTINUES", 875, 790);
+  ctx.fillText(`${excerpt.truncated ? "BYTE EXCERPT" : "BYTE RANGE"} / ${range}`, 75, 760);
+  if (wrapped.truncated) ctx.fillText("TEXT EXCERPT — CONTINUES", 875, 760);
   ctx.fillText("ENCODE. DECODE. DISCOVER.", 75, 805);
   ctx.font = `18px ${font}`;
   ctx.fillText("Bitcoin hex encoder · decoder · private dead drops", 75, 832);
