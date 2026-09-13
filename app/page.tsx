@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { decodeAscii, decodeUtf8, discoverTextRuns, encodeText, formatDump, parseOffsetDump, parseRawHex, toHex, type ParsedHex } from "../lib/hexCodec";
@@ -125,5 +126,5 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
 
 export default function Home() {
   const [motion, setMotion] = useState(true);
-  return <Providers><main className="shell" data-motion={motion ? "on" : "off"}><TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} /><SecurityGate>{active => <HexWorkspace active={active} motion={motion} />}</SecurityGate><footer><span>HEXONION / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Text becomes bytes. Bytes reveal stories.</span></footer></main></Providers>;
+  return <Providers><main className="shell" data-motion={motion ? "on" : "off"}><TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} /><section className="dead-drop-promo" aria-labelledby="dead-drop-title"><div><span className="eyebrow">PRIVATE CHANNEL / INVITATION ONLY</span><h2 id="dead-drop-title">SECRET DEAD DROP</h2><p>Encrypt a short transmission in your browser and share it through HTTPS or Tor. No wallet required for this channel.</p></div><Link className="primary" href="/dead-drop">Open dead drop ↗</Link></section><SecurityGate>{active => <HexWorkspace active={active} motion={motion} />}</SecurityGate><footer><span>HEXONION / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Text becomes bytes. Bytes reveal stories.</span></footer></main></Providers>;
 }
