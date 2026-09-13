@@ -19,8 +19,8 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
   const audio = useRef<AudioContext | null>(null);
   const [mode, setMode] = useState<"encode" | "decode">("encode");
   const [text, setText] = useState(GENESIS_MESSAGE);
-  const [hex, setHex] = useState(() => formatDump(parseRawHex(GENESIS_BLOCK_HEX).bytes));
-  const [format, setFormat] = useState<"raw" | "dump">("dump");
+  const [hex, setHex] = useState(() => toHex(parseRawHex(GENESIS_BLOCK_HEX).bytes));
+  const [format, setFormat] = useState<"raw" | "dump">("raw");
   const [view, setView] = useState<"ascii" | "utf8" | "dump">("ascii");
   const [share, setShare] = useState(false);
   const [notice, setNotice] = useState("");

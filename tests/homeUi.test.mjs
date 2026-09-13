@@ -12,4 +12,5 @@ test("homepage presents public X and private Onion paths in plain language", asy
   assert.match(ui, /href="#hex-workspace"/);
   assert.match(ui, /href="\/dead-drop"/);
   assert.match(ui, /setFormat\(full \? "dump" : "raw"\)/);
+  assert.match(ui, /useState<"raw" \| "dump">\("raw"\)/);
 });
