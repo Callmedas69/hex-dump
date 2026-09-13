@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { decryptDeadDrop, encryptDeadDrop } from "@/lib/deadDropCrypto";
+import { Providers } from "../providers";
+import { InvitationCreator } from "../../components/InvitationCreator";
 
 const onionBase = process.env.NEXT_PUBLIC_DEAD_DROP_ONION_URL?.replace(/\/$/, "");
 
@@ -60,11 +63,12 @@ export default function DeadDropPage() {
 
   async function copy(value: string, label: string) { try { await navigator.clipboard.writeText(value); setNotice(`${label} copied.`); } catch { setNotice("Clipboard unavailable. Copy the link manually."); } }
 
-  return <main className="shell" data-motion={motion ? "on" : "off"}><header className="terminal-header"><div className="terminal-titlebar"><span><span className="status-square" />HEXONION / SECRET DEAD DROP</span><span>{connection}</span><button type="button" onClick={() => setMotion(value => !value)}>{motion ? "Motion on" : "Motion off"}</button></div><div className="page-header"><div><p className="command-line">$ open transmission channel<span className="terminal-cursor" aria-hidden="true" /></p><h1>SECRET DEAD DROP</h1><p className="intro">Invitation-only encrypted text delivery. Your browser encrypts the message before upload; anyone holding the complete link can read it.</p></div></div></header>
+  return <Providers><main className="shell" data-motion={motion ? "on" : "off"}><header className="terminal-header"><div className="terminal-titlebar"><span><span className="status-square" />HEXONION / SECRET DEAD DROP</span><span>{connection}</span><button type="button" onClick={() => setMotion(value => !value)}>{motion ? "Motion on" : "Motion off"}</button></div><div className="page-header"><div><p className="command-line">$ open transmission channel<span className="terminal-cursor" aria-hidden="true" /></p><h1>SECRET DEAD DROP</h1><p className="intro">Invitation-only encrypted text delivery. Anyone holding the complete link can read it.</p></div><Link className="small" href="/">← Home / Bitcoin hex</Link></div></header>
+    {!retrievalId && !dropId && <InvitationCreator />}
     <section ref={workspaceRef} className="workspace" aria-label="Secret dead drop">
       {retrievalId || (dropId && !message) ? <div className="input-area"><div className="panel-head"><span>RETRIEVE TRANSMISSION / {retrievalId ?? dropId}</span></div>{retrieved === null ? <div style={{ padding: 18 }}><p className="intro">The ciphertext is fetched without the fragment key. Decryption happens locally in this browser.</p><button type="button" className="primary" onClick={retrieve} disabled={busy}>{busy ? "Retrieving…" : "Retrieve transmission"}</button></div> : <pre style={{ margin: 0, padding: 18, whiteSpace: "pre-wrap" }}>{retrieved}</pre>}</div> : <><div className="input-area"><div className="panel-head"><label htmlFor="invitation">INVITATION CODE</label><span>SERVER AUTHORIZATION</span></div><input id="invitation" value={invitation} onChange={event => setInvitation(event.target.value)} type="password" autoComplete="off" style={{ width: "100%", padding: 15, background: "transparent", border: 0, color: "var(--ink)", font: "inherit" }} /></div><div className="input-area"><div className="panel-head"><label htmlFor="message">TRANSMISSION TEXT / 16 KiB UTF-8 MAX</label><span>{new TextEncoder().encode(message).length.toLocaleString()} bytes</span></div><textarea id="message" value={message} onChange={event => setMessage(event.target.value)} maxLength={16384} placeholder="Type a secret transmission…" /></div><button type="button" className="primary" onClick={deposit} disabled={busy || !invitation || !message}>{busy ? "Sending…" : "Send transmission"}</button></>}
       {link && <div className="input-area" style={{ marginTop: 18, padding: 15 }}><p className="intro">Keep the fragment intact. It contains the only decryption key.</p><button type="button" onClick={() => copy(link, "Web link")}>Copy web link</button>{onionBase && <button type="button" style={{ marginLeft: 8 }} onClick={() => copy(`${onionBase}/dead-drop/${dropId}${link.slice(link.indexOf("#"))}`, "Onion link")}>Copy onion link</button>}</div>}
       {!retrievalId && !dropId && <div style={{ marginTop: 18 }}><button type="button" onClick={previewCiphertext} disabled={!message}>Preview ciphertext</button>{preview && <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", marginTop: 12 }}>{preview}</pre>}<p className="output-note">Transmissions expire 24 hours after deposit.</p></div>}
-      <p className="notice" role="status" aria-live="polite" style={{ marginTop: 18 }}>{notice}</p><p className="output-note">No wallet, X integration, analytics, or third-party resources are required for this flow. Expiration removes the service record but cannot guarantee forensic erasure from every storage layer.</p>
-    </section></main>;
+       <p className="notice" role="status" aria-live="polite" style={{ marginTop: 18 }}>{notice}</p><p className="output-note">Wallet signing is only needed to create an invitation code. Recipients use the complete link in their browser. Expiration removes the service record but cannot guarantee forensic erasure from every storage layer.</p>
+    </section></main></Providers>;
 }
