@@ -95,6 +95,15 @@ export default function ShareDialog({ bytes, mode, baseOffset = 0, selection, on
     finally { setBusy(false); }
   }
 
+  function downloadImage() {
+    if (!image) return false;
+    const anchor = document.createElement("a");
+    anchor.href = image.url;
+    anchor.download = "bitcoin-hex-1600x900.png";
+    anchor.click();
+    return true;
+  }
+
   return (
     <dialog ref={dialog} className={styles.dialog} aria-labelledby="share-title" onCancel={event => { event.preventDefault(); if (!busy) onClose(); }}>
       <div className={styles.heading}>
@@ -113,18 +122,18 @@ export default function ShareDialog({ bytes, mode, baseOffset = 0, selection, on
       {validation && <p className={styles.error}>{validation}</p>}
       <div className={styles.actions}>
         <button type="button" disabled={!image || busy} onClick={() => {
-          if (!image) return;
-          const anchor = document.createElement("a"); anchor.href = image.url; anchor.download = "bitcoin-hex-1600x900.png"; anchor.click(); setMessage("PNG download started.");
+          if (downloadImage()) setMessage("PNG download started.");
         }}>Download PNG</button>
         <button type="button" disabled={!!validation || busy} onClick={async () => {
           try { await navigator.clipboard.writeText(text); setMessage("Post text copied."); } catch { setError("Clipboard unavailable. Select the post text and copy it manually."); }
         }}>Copy text</button>
-        <button type="button" disabled={!!validation || busy} onClick={() => {
+        <button type="button" disabled={!image || !!validation || busy} onClick={() => {
+          if (!downloadImage()) return;
           const tab = window.open(composerUrl(text), "_blank");
-          if (tab) { tab.opener = null; setMessage("X composer opened. Attach your downloaded PNG before posting."); } else setError("Allow popups to open the X composer.");
-        }}>Open X composer</button>
+          if (tab) { tab.opener = null; setMessage("PNG downloaded and X composer opened. Attach the downloaded image before posting."); } else setError("Allow popups to open the X composer.");
+        }}>Download PNG + open X</button>
       </div>
-      <p className={styles.note}>For composer sharing, download the image and attach it to your post.</p>
+      <p className={styles.note}>X does not allow a website to attach a local file automatically. Use the combined button to download the PNG and open the composer, then attach the downloaded image.</p>
       <div className={styles.connection}>
         {connection?.configured ? connection.connected ? <>
           <span>X connected · Post the reviewed text and image together.</span>
