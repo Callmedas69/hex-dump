@@ -10,6 +10,7 @@ test("invitation APIs require signed, one-time token-holder authorization", asyn
   assert.match(create, /verifyMessage/);
   assert.match(create, /consumeInvitationChallenge/);
   assert.match(create, /productionPolicy\(process\.env\)/);
+  assert.match(create, /developmentPolicy\(process\.env\.NEXT_PUBLIC_USDG_PROFILE\)/);
   assert.match(create, /balanceOf/);
   assert.match(create, /createHash\("sha256"\)/);
   assert.doesNotMatch(create, /console\.log/);

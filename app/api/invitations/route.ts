@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
 import { createPublicClient, getAddress, http, verifyMessage, erc20Abi, type Hex } from "viem";
-import { productionPolicy } from "@/lib/tokenGate";
+import { developmentPolicy, productionPolicy } from "@/lib/tokenGate";
 import { consumeInvitationChallenge, createInvitation, ensureDeadDropSchema, getInvitationChallenge, invitationChallengeMessage } from "@/lib/server/deadDropDb";
 
 export const runtime = "nodejs";
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const message = invitationChallengeMessage(address, body.nonce, new Date(challenge.expiresAt));
     if (!/^0x[0-9a-f]+$/i.test(body.signature) || !(await verifyMessage({ address, message, signature: body.signature as Hex }))) return NextResponse.json({ error: "Invitation authorization failed." }, { status: 403, headers });
     if (!(await consumeInvitationChallenge(body.nonce))) return NextResponse.json({ error: "Invitation authorization failed." }, { status: 403, headers });
-    const policy = productionPolicy(process.env);
+    const policy = process.env.NODE_ENV === "production" ? productionPolicy(process.env) : developmentPolicy(process.env.NEXT_PUBLIC_USDG_PROFILE);
     if (!policy) return NextResponse.json({ error: "Token access is not configured." }, { status: 503, headers });
     const deposits = Number(body.deposits ?? 10);
     const days = Number(body.days ?? 7);
