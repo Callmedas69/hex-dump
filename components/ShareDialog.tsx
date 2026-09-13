@@ -133,7 +133,7 @@ export default function ShareDialog({ bytes, mode, baseOffset = 0, selection, on
           if (tab) { tab.opener = null; setMessage("PNG downloaded and X composer opened. Attach the downloaded image before posting."); } else setError("Allow popups to open the X composer.");
         }}>Download PNG + open X</button>
       </div>
-      <p className={styles.note}>X does not allow a website to attach a local file automatically. Use the combined button to download the PNG and open the composer, then attach the downloaded image.</p>
+      <p className={styles.note}>To share on X, download the PNG, open the composer, and attach the downloaded image to your post. Direct posting is available after X is connected.</p>
       <div className={styles.connection}>
         {connection?.configured ? connection.connected ? <>
           <span>X connected · Post the reviewed text and image together.</span>
@@ -141,7 +141,7 @@ export default function ShareDialog({ bytes, mode, baseOffset = 0, selection, on
         </> : <>
           <span>Connect X to post the text and image together.</span>
           <div className={styles.actions}><button type="button" disabled={busy} onClick={connectX}>Connect X</button><button type="button" disabled={busy} onClick={checkConnection}>Check connection</button></div>
-        </> : <span>{connection ? "Direct posting is unavailable. Use the image download and X composer above." : "Checking X connection…"}</span>}
+        </> : <span>{connection ? "Direct posting is unavailable until X is connected. Use the download and composer option above." : "Checking X connection…"}</span>}
       </div>
       <div aria-live="polite">{message && <p className={styles.success}>{message}</p>}{postedUrl && <a href={postedUrl} target="_blank" rel="noopener noreferrer">View your post on X ↗</a>}</div>
       {error && <p role="alert" className={styles.error}>{error}</p>}
