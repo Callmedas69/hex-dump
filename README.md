@@ -23,7 +23,7 @@ RainbowKit connects injected wallets without a WalletConnect project ID. Configu
 
 ## Production token policy
 
-Set the `NEXT_PUBLIC_MEME_TOKEN_*` values before building. The only supported network is **Robinhood Chain mainnet (4663)**. A missing, invalid, or unsupported production policy keeps the workspace locked. Visitors cannot change the gating token. USDG remains the development substitute; the future meme token's holding threshold must be configured separately.
+Set every `NEXT_PUBLIC_MEME_TOKEN_*` value before building. The only supported network is **Robinhood Chain mainnet (4663)**. A missing, invalid, or unsupported production policy keeps the workspace locked. Visitors cannot change the gating token. To replace USDG with the final token, change the address, symbol, decimals, and raw threshold in Vercel and redeploy; no application code change is required.
 
 Balances are compared as bigint values in the smallest token unit. A positive minimum is inclusive; a zero minimum still requires a positive balance. The gate refreshes every 30 seconds, on focus, and on reconnect. Account/network changes select a new query; disconnects and failed checks revoke the displayed workspace.
 

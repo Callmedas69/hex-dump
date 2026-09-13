@@ -10,6 +10,7 @@ import { SecurityGate } from "../components/SecurityGate";
 import ShareDialog from "../components/ShareDialog";
 import { TerminalHeader } from "../components/TerminalHeader";
 import { Providers } from "./providers";
+import { InvitationCreator } from "../components/InvitationCreator";
 
 gsap.registerPlugin(useGSAP);
 const PAGE_BYTES = 512;
@@ -126,5 +127,5 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
 
 export default function Home() {
   const [motion, setMotion] = useState(true);
-  return <Providers><main className="shell" data-motion={motion ? "on" : "off"}><TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} /><section className="dead-drop-promo" aria-labelledby="dead-drop-title"><div><span className="eyebrow">PRIVATE CHANNEL / INVITATION ONLY</span><h2 id="dead-drop-title">SECRET DEAD DROP</h2><p>Encrypt a short transmission in your browser and share it through HTTPS or Tor. No wallet required for this channel.</p></div><Link className="primary" href="/dead-drop">Open dead drop ↗</Link></section><SecurityGate>{active => <HexWorkspace active={active} motion={motion} />}</SecurityGate><footer><span>HEXONION / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Text becomes bytes. Bytes reveal stories.</span></footer></main></Providers>;
+  return <Providers><main className="shell" data-motion={motion ? "on" : "off"}><TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} /><section className="dead-drop-promo" aria-labelledby="dead-drop-title"><div><span className="eyebrow">PRIVATE CHANNEL / INVITATION ONLY</span><h2 id="dead-drop-title">SECRET DEAD DROP</h2><p>Encrypt a short transmission in your browser and share it through HTTPS or Tor. No wallet required for this channel.</p></div><Link className="primary" href="/dead-drop">Open dead drop ↗</Link></section><InvitationCreator /><SecurityGate>{active => <HexWorkspace active={active} motion={motion} />}</SecurityGate><footer><span>HEXONION / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Text becomes bytes. Bytes reveal stories.</span></footer></main></Providers>;
 }

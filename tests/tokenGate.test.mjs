@@ -1,7 +1,7 @@
 import test from 'node:test'; import assert from 'node:assert/strict';
 test('policy rejects invalid numeric configuration and supports explicit development profiles', async () => {
   const { productionPolicy, developmentPolicy, hasTokenAccess } = await import('../lib/tokenGate.ts');
-  const valid = { NEXT_PUBLIC_MEME_TOKEN_ADDRESS: '0x0000000000000000000000000000000000000001', NEXT_PUBLIC_MEME_TOKEN_CHAIN_ID: '4663' };
+  const valid = { NEXT_PUBLIC_MEME_TOKEN_ADDRESS: '0x0000000000000000000000000000000000000001', NEXT_PUBLIC_MEME_TOKEN_CHAIN_ID: '4663', NEXT_PUBLIC_MEME_TOKEN_SYMBOL: 'USDG', NEXT_PUBLIC_MEME_TOKEN_DECIMALS: '6', NEXT_PUBLIC_MEME_TOKEN_MIN_RAW: '10000' };
   for (const bad of [
     { NEXT_PUBLIC_MEME_TOKEN_CHAIN_ID: 'abc' },
     { NEXT_PUBLIC_MEME_TOKEN_CHAIN_ID: '-1' },
@@ -19,6 +19,8 @@ test('policy rejects invalid numeric configuration and supports explicit develop
   assert.equal(productionPolicy({}), null);
   assert.equal(productionPolicy({ ...valid, NEXT_PUBLIC_MEME_TOKEN_ADDRESS: 'bad' }), null);
   assert.equal(productionPolicy({ ...valid, NEXT_PUBLIC_MEME_TOKEN_MIN_RAW: '2' }).minimumRawBalance, 2n);
+  assert.equal(productionPolicy({ ...valid, NEXT_PUBLIC_MEME_TOKEN_SYMBOL: '' }), null);
+  assert.equal(productionPolicy({ ...valid, NEXT_PUBLIC_MEME_TOKEN_DECIMALS: '' }), null);
   assert.equal(hasTokenAccess(0n, 0n), false);
   assert.equal(hasTokenAccess(1n, 1n), true);
   assert.equal(hasTokenAccess(1n, 2n), false);

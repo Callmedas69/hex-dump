@@ -160,3 +160,13 @@ footer { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px;
 .dead-drop-promo p { margin:0; max-width:60ch; color:var(--muted); font-size:11px; line-height:1.7; }
 .dead-drop-promo a { flex-shrink:0; text-decoration:none; }
 @media (max-width: 600px) { .dead-drop-promo { align-items:flex-start; flex-direction:column; } .dead-drop-promo a { width:100%; text-align:center; } }
+
+.invitation-creator { border: 1px solid var(--line); background: var(--panel); padding: 20px 22px; margin-bottom: 18px; }
+.invitation-creator h2 { margin: 8px 0 5px; font: 400 20px/1.2 var(--font-nokia-title),monospace; letter-spacing: .06em; }
+.invitation-creator p { margin: 0; max-width: 70ch; color: var(--muted); font-size: 11px; line-height: 1.7; }
+.invitation-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 16px; }
+.invitation-controls label { display: grid; gap: 4px; color: var(--muted); font-size: 10px; }
+.invitation-controls input { width: 90px; min-height: 40px; padding: 9px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; }
+.invitation-token { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 12px; border: 1px dashed var(--ink); overflow-wrap: anywhere; }
+.invitation-token code { flex: 1; font-size: 11px; }
+@media (max-width: 600px) { .invitation-controls { align-items: stretch; flex-direction: column; } .invitation-controls label, .invitation-controls input, .invitation-controls button, .invitation-controls > div { width: 100%; } .invitation-token { align-items: stretch; flex-direction: column; } }

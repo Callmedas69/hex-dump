@@ -53,3 +53,22 @@ test("invitation lifecycle enforces valid, revoked, exhausted, and expired state
   assert.equal(await verifyInvitation(expiredHash), false);
   await db`DELETE FROM dead_drop_invitations WHERE token_hash IN (${tokenHash}, ${expiredHash})`;
 });
+
+test("wallet invitation challenges are one-time and expire", { timeout: 30_000 }, async (t) => {
+  if (!process.env.DATABASE_URL) {
+    t.skip("DATABASE_URL is required for the persistence integration test");
+    return;
+  }
+  const { neon } = await import("@neondatabase/serverless");
+  const db = neon(process.env.DATABASE_URL);
+  const { ensureDeadDropSchema, createInvitationChallenge, getInvitationChallenge, consumeInvitationChallenge } = await import("../lib/server/deadDropDb.ts");
+  await ensureDeadDropSchema();
+  const nonce = randomBytes(32).toString("base64url");
+  const expiresAt = new Date(Date.now() + 60_000);
+  await createInvitationChallenge("0x0000000000000000000000000000000000000001", nonce, expiresAt);
+  assert.equal((await getInvitationChallenge(nonce))?.walletAddress, "0x0000000000000000000000000000000000000001");
+  assert.equal(await consumeInvitationChallenge(nonce), "0x0000000000000000000000000000000000000001");
+  assert.equal(await consumeInvitationChallenge(nonce), undefined);
+  const nonceHash = createHash("sha256").update(nonce).digest("hex");
+  await db`DELETE FROM dead_drop_invitation_challenges WHERE nonce_hash = ${nonceHash}`;
+});

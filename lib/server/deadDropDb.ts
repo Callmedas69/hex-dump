@@ -1,6 +1,6 @@
 import "server-only";
 import { neon } from "@neondatabase/serverless";
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 
 export type StoredDrop = { id: string; v: number; iv: string; ciphertext: string; expiresAt: string };
 
@@ -15,6 +15,32 @@ export async function ensureDeadDropSchema() {
   await sql`CREATE TABLE IF NOT EXISTS dead_drop_invitations (id BIGSERIAL PRIMARY KEY, token_hash TEXT UNIQUE NOT NULL, remaining_deposits INTEGER NOT NULL, expires_at TIMESTAMPTZ NOT NULL, revoked BOOLEAN NOT NULL DEFAULT FALSE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`;
   await sql`CREATE TABLE IF NOT EXISTS dead_drops (id TEXT PRIMARY KEY, version INTEGER NOT NULL, iv TEXT NOT NULL, ciphertext TEXT NOT NULL, expires_at TIMESTAMPTZ NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), invitation_id BIGINT REFERENCES dead_drop_invitations(id), idempotency_key TEXT NOT NULL, UNIQUE(invitation_id, idempotency_key))`;
   await sql`CREATE INDEX IF NOT EXISTS dead_drops_expires_idx ON dead_drops (expires_at)`;
+  await sql`CREATE TABLE IF NOT EXISTS dead_drop_invitation_challenges (nonce_hash TEXT PRIMARY KEY, wallet_address TEXT NOT NULL, expires_at TIMESTAMPTZ NOT NULL, consumed_at TIMESTAMPTZ)`;
+  await sql`CREATE INDEX IF NOT EXISTS dead_drop_challenges_expires_idx ON dead_drop_invitation_challenges (expires_at)`;
+}
+
+export function invitationChallengeMessage(address: string, nonce: string, expiresAt: Date) {
+  return `HEXONION invitation challenge\nAddress: ${address.toLowerCase()}\nNonce: ${nonce}\nExpires: ${expiresAt.toISOString()}`;
+}
+
+export async function createInvitationChallenge(walletAddress: string, nonce: string, expiresAt: Date) {
+  const sql = getSql();
+  const nonceHash = createHash("sha256").update(nonce).digest("hex");
+  await sql`INSERT INTO dead_drop_invitation_challenges (nonce_hash, wallet_address, expires_at) VALUES (${nonceHash}, ${walletAddress.toLowerCase()}, ${expiresAt.toISOString()})`;
+}
+
+export async function getInvitationChallenge(nonce: string) {
+  const sql = getSql();
+  const nonceHash = createHash("sha256").update(nonce).digest("hex");
+  const rows = await sql`SELECT wallet_address AS "walletAddress", expires_at AS "expiresAt", consumed_at AS "consumedAt" FROM dead_drop_invitation_challenges WHERE nonce_hash = ${nonceHash} LIMIT 1`;
+  return rows[0] as { walletAddress: string; expiresAt: string; consumedAt: string | null } | undefined;
+}
+
+export async function consumeInvitationChallenge(nonce: string) {
+  const sql = getSql();
+  const nonceHash = createHash("sha256").update(nonce).digest("hex");
+  const rows = await sql`UPDATE dead_drop_invitation_challenges SET consumed_at = NOW() WHERE nonce_hash = ${nonceHash} AND consumed_at IS NULL AND expires_at > NOW() RETURNING wallet_address AS "walletAddress"`;
+  return rows[0]?.walletAddress as string | undefined;
 }
 
 export async function createDrop(input: { tokenHash: string; idempotencyKey: string; iv: string; ciphertext: string; expiresAt: Date }) {
