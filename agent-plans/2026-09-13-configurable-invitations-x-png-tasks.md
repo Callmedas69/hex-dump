@@ -25,7 +25,7 @@ Each task should be completed and verified before the next dependent task begins
 - [x] Add `POST /api/invitations` with server-side count and validity limits.
 - [x] Generate a cryptographically random token and store only its SHA-256 hash.
 - [x] Add a wallet-gated invitation creation panel with one-time display and copy controls.
-- [x] Explain that the invitation authorizes depositing while the complete link authorizes retrieval.
+- [x] Explain that the invitation code authorizes sending messages while the complete link authorizes retrieval.
 - [x] Preserve operator CLI generation and revocation.
 - [x] Test quotas, expiry, revocation, malformed requests, token secrecy, and repeated submissions.
 

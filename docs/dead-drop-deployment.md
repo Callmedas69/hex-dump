@@ -24,5 +24,5 @@ Do not redirect onion requests to the public domain. The proxy must preserve the
 
 ## Release checks
 
-Verify both directions (HTTPS deposit → Tor retrieval and Tor deposit → HTTPS retrieval), expiration, restart persistence, CSP/no-store headers, and that no plaintext or URL fragment is sent in requests or logs. Do not publish the onion hostname until these checks pass.
+Verify both directions (HTTPS send → Tor retrieval and Tor send → HTTPS retrieval), expiration, restart persistence, CSP/no-store headers, and that no plaintext or URL fragment is sent in requests or logs. Do not publish the onion hostname until these checks pass.
 
