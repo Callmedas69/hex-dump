@@ -1,7 +1,14 @@
 import { createHash, randomBytes } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { neon } from "@neondatabase/serverless";
 
-const url = process.env.DATABASE_URL;
+function envFileValue(name) {
+  try {
+    const line = readFileSync(".env", "utf8").split(/\r?\n/).find((item) => item.startsWith(`${name}=`));
+    return line?.slice(name.length + 1).trim().replace(/^['"]|['"]$/g, "");
+  } catch { return undefined; }
+}
+const url = process.env.DATABASE_URL ?? envFileValue("DATABASE_URL");
 if (!url) throw new Error("DATABASE_URL is required");
 const deposits = Number(process.argv[2] ?? 10);
 const days = Number(process.argv[3] ?? 7);
