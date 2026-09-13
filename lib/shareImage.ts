@@ -87,7 +87,6 @@ export async function renderShareImage(snapshot: ShareSnapshot): Promise<Blob> {
   if (wrapped.truncated) ctx.fillText("TEXT EXCERPT — CONTINUES", 875, 760);
   ctx.fillText("ENCODE. DECODE. DISCOVER.", 75, 805);
   ctx.font = `18px ${font}`;
-  ctx.fillText("Bitcoin hex encoder · decoder · private dead drops", 75, 832);
-  ctx.fillText("Encrypted in your browser", 75, 856);
+  ctx.fillText("Encrypted in your browser", 75, 835);
   return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Could not export the image.")), "image/png"));
 }

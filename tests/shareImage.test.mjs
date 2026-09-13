@@ -42,7 +42,7 @@ test("PNG rendering omits encode plaintext, preserves bytes and labels excerpts"
   assert.deepEqual(fontLoads, ["46px NokiaTitle", "21px NokiaBody"]);
   assert.equal(calls.find(call => call.text === "HEXONION").font, "400 46px NokiaTitle");
   assert.equal(calls.filter(call => call.text === "HEXONION").length, 1);
-  assert.ok(calls.some(call => call.text === "Bitcoin hex encoder · decoder · private dead drops" && call.y > 800));
+  assert.equal(calls.some(call => call.text === "Bitcoin hex encoder · decoder · private dead drops"), false);
   assert.ok(calls.some(call => call.text === "Encrypted in your browser" && call.y > 800));
   assert.equal(calls.some(call => /PRIVATE|Never|YOUR TEXT|READABLE BYTES/.test(call.text)), false);
   const renderedBytes = calls.filter(call => /^[0-9A-F]{2}$/.test(call.text));
