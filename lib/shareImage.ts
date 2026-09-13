@@ -52,14 +52,7 @@ export async function renderShareImage(snapshot: ShareSnapshot): Promise<Blob> {
   }
   ctx.font = `400 46px ${titleFont}`;
   ctx.fillText("HEXONION", 75, 115);
-  // Keep the product context on every exported card so an image still makes
-  // sense when it is viewed away from the HEXONION interface.
-  ctx.font = `400 30px ${titleFont}`;
-  ctx.fillText("HEXONION", 930, 105);
   ctx.fillStyle = "#354622";
-  ctx.font = `18px ${font}`;
-  ctx.fillText("Bitcoin hex encoder · decoder · private dead drops", 930, 143);
-  ctx.fillText("Encrypted in your browser", 930, 174);
   ctx.font = `20px ${font}`;
   ctx.fillText(`${snapshot.mode.toUpperCase()} / ${snapshot.bytes.length.toLocaleString()} BYTES`, 75, 160);
   ctx.font = `21px ${font}`;
@@ -92,6 +85,9 @@ export async function renderShareImage(snapshot: ShareSnapshot): Promise<Blob> {
   const range = `${(snapshot.baseOffset + excerpt.start).toString(16).padStart(8, "0")}–${(snapshot.baseOffset + excerpt.end - 1).toString(16).padStart(8, "0")}`;
   ctx.fillText(`${excerpt.truncated ? "BYTE EXCERPT" : "BYTE RANGE"} / ${range}`, 75, 790);
   if (wrapped.truncated) ctx.fillText("TEXT EXCERPT — CONTINUES", 875, 790);
-  ctx.fillText("ENCODE. DECODE. DISCOVER.", 75, 835);
+  ctx.fillText("ENCODE. DECODE. DISCOVER.", 75, 805);
+  ctx.font = `18px ${font}`;
+  ctx.fillText("Bitcoin hex encoder · decoder · private dead drops", 75, 832);
+  ctx.fillText("Encrypted in your browser", 75, 856);
   return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Could not export the image.")), "image/png"));
 }
