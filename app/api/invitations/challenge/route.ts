@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
     await ensureDeadDropSchema();
     await createInvitationChallenge(address, nonce, expiresAt);
     return NextResponse.json({ nonce, message: invitationChallengeMessage(address, nonce, expiresAt), expiresAt: expiresAt.toISOString() }, { status: 201, headers });
-  } catch {
-    return NextResponse.json({ error: "Could not issue invitation challenge." }, { status: 400, headers });
+  } catch (error) {
+    const configured = !(error instanceof Error && /DATABASE_URL|connection string|neon/i.test(error.message));
+    return NextResponse.json({ error: configured ? "Could not issue invitation challenge." : "Invitation service is not configured." }, { status: configured ? 400 : 503, headers });
   }
 }

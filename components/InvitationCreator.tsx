@@ -19,7 +19,7 @@ export function InvitationCreator() {
     try {
       const challengeResponse = await fetch("/api/invitations/challenge", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address }) });
       const challenge = await challengeResponse.json() as { nonce?: string; message?: string; error?: string };
-      if (!challengeResponse.ok || !challenge.nonce || !challenge.message) throw new Error(challenge.error ?? "Could not start authorization.");
+      if (!challengeResponse.ok || !challenge.nonce || !challenge.message) throw new Error(challenge.error ?? "Could not start authorization. Check the deployment configuration.");
       const signature = await signMessageAsync({ message: challenge.message });
       const response = await fetch("/api/invitations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address, nonce: challenge.nonce, signature, deposits: Number(slots), days: Number(days) }) });
       const result = await response.json() as { token?: string; error?: string };
