@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { composerUrl, validatePostText, postLength, cardExcerpt, initialPostText, SHARE_WIDTH, SHARE_HEIGHT } from "../lib/share.ts";
+import { composerUrl, validatePostText, postLength, cardExcerpt, initialPostText, SHARE_WIDTH, SHARE_HEIGHT, SHARE_SITE_URL } from "../lib/share.ts";
 import { validatePng, publishToX } from "../lib/server/xClient.ts";
 import { beginXAuth, finishXAuth, getXSession, removeXSession, oncePerDraft, xConfiguration } from "../lib/server/xAuth.ts";
 
@@ -33,14 +33,16 @@ test("large Unicode input produces a bounded, valid initial post", () => {
   const initial = initialPostText({ bytes: new TextEncoder().encode(text), mode: "encode", baseOffset: 0 });
   assert.ok(postLength(initial) <= 280);
   assert.equal(validatePostText(initial), null);
-  assert.match(initial, /^[0-9A-F]{2}( [0-9A-F]{2}){92}$/);
-  assert.deepEqual(Buffer.from(initial.replaceAll(" ", ""), "hex"), Buffer.from(new TextEncoder().encode(text).slice(0, 93)));
+  const [hex, footer] = initial.split("\n\n");
+  assert.equal(footer, SHARE_SITE_URL);
+  assert.match(hex, /^[0-9A-F]{2}( [0-9A-F]{2})*$/);
+  assert.deepEqual(Buffer.from(hex.replaceAll(" ", ""), "hex"), Buffer.from(new TextEncoder().encode(text).slice(0, hex.split(" ").length)));
 });
 
 test("encoding posts contain only hex even when a plaintext selection is present", () => {
   const snapshot = { bytes: new TextEncoder().encode("Hello 🔐"), mode: "encode", baseOffset: 0, selection: { start: 0, end: 5, text: "Never reveal this message" } };
   const text = initialPostText(snapshot);
-  assert.equal(text, "48 65 6C 6C 6F 20 F0 9F 94 90");
+  assert.equal(text, `48 65 6C 6C 6F 20 F0 9F 94 90\n\n${SHARE_SITE_URL}`);
   assert.equal(new URL(composerUrl(text)).searchParams.get("text"), text);
   assert.equal(initialPostText({ ...snapshot, mode: "decode" }).includes(snapshot.selection.text), true);
 });

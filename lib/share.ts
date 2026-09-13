@@ -2,6 +2,7 @@ import twitterText from "twitter-text";
 
 export const SHARE_WIDTH = 1600;
 export const SHARE_HEIGHT = 900;
+export const SHARE_SITE_URL = "https://hexonion.0xdas.dev/";
 export type ShareSelection = { start: number; end: number; text: string };
 export type ShareSnapshot = {
   bytes: Uint8Array;
@@ -31,8 +32,11 @@ export function validateShare(text: string, bytes: Uint8Array): string | null {
 
 export function initialPostText(snapshot: ShareSnapshot): string {
   if (snapshot.mode === "encode") {
-    // 93 complete, space-separated bytes fit in a standard 280-character X post.
-    return Array.from(snapshot.bytes.subarray(0, 93), byte => byte.toString(16).padStart(2, "0").toUpperCase()).join(" ");
+    const footer = `\n\n${SHARE_SITE_URL}`;
+    let count = Math.min(snapshot.bytes.length, 93);
+    const bytesText = () => Array.from(snapshot.bytes.subarray(0, count), byte => byte.toString(16).padStart(2, "0").toUpperCase()).join(" ");
+    while (count > 0 && postLength(bytesText() + footer) > 280) count -= 1;
+    return bytesText() + footer;
   }
   let message = snapshot.selection?.text;
   if (!message) message = "Discovering readable messages inside Bitcoin bytes.";

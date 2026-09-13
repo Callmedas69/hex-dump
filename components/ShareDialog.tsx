@@ -118,7 +118,7 @@ export default function ShareDialog({ bytes, mode, baseOffset = 0, selection, on
       <p className={styles.note}>1600 × 900 PNG · Your selected bytes are captured in this preview.</p>
       <label className={styles.label} htmlFor="share-post-text">Post text <span>{postLength(text)} / 280</span></label>
       <textarea id="share-post-text" value={text} maxLength={10000} readOnly={snapshot.mode === "encode"} disabled={busy || !!postedUrl} onChange={event => { setText(event.target.value); requestId.current = ""; }} rows={3} />
-      {snapshot.mode === "encode" && <p className={styles.note}>Encoding shares contain hex only. Edit your message in the encoder to change the result.{snapshot.bytes.length > 93 ? " Post text shows the first 93 bytes to fit X’s character limit." : ""}</p>}
+      {snapshot.mode === "encode" && <p className={styles.note}>The post includes the encoded hex and a link back to HEXONION. Edit your message in the encoder to change the result.</p>}
       {validation && <p className={styles.error}>{validation}</p>}
       <div className={styles.actions}>
         <button type="button" disabled={!image || busy} onClick={() => {
