@@ -73,8 +73,9 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
   }
   function resetSelection() { setSelectedStart(undefined); setPage(0); setNotice(""); }
   function preset(full: boolean) {
-    setMode("decode"); setFormat("dump");
-    setHex(formatDump(full ? parseRawHex(GENESIS_BLOCK_HEX).bytes : encodeText(GENESIS_MESSAGE)));
+    const bytes = full ? parseRawHex(GENESIS_BLOCK_HEX).bytes : encodeText(GENESIS_MESSAGE);
+    setMode("decode"); setFormat(full ? "dump" : "raw");
+    setHex(full ? formatDump(bytes) : toHex(bytes));
     resetSelection();
   }
 
