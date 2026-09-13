@@ -27,7 +27,7 @@ Each task should be completed and verified before the next dependent task begins
 - [x] Add a wallet-gated invitation creation panel with one-time display and copy controls.
 - [x] Explain that the invitation authorizes depositing while the complete link authorizes retrieval.
 - [x] Preserve operator CLI generation and revocation.
-- [ ] Test quotas, expiry, revocation, malformed requests, token secrecy, and repeated submissions.
+- [x] Test quotas, expiry, revocation, malformed requests, token secrecy, and repeated submissions.
 
 ## 4. X PNG publishing
 
