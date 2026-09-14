@@ -1,0 +1,13 @@
+{
+  "database": "Locally configured database; production identity not independently verified",
+  "counts": [
+    {
+      "total": 3,
+      "expired": 1,
+      "active": 2,
+      "oldest_expired_at": "2026-09-14T05:21:44.371Z",
+      "checked_at": "2026-09-14T06:18:04.832Z"
+    }
+  ],
+  "schedulers": []
+}

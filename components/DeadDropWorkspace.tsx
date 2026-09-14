@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { decryptDeadDrop, encryptDeadDrop, MAX_PLAINTEXT_BYTES } from "@/lib/deadDropCrypto";
@@ -14,7 +14,8 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
   const [invitation, setInvitation] = useState("");
   const [notice, setNotice] = useState("");
   const [created, setCreated] = useState<CreatedDrop | null>(null);
-  const [retrieved, setRetrieved] = useState<string | null>(null);
+  const [retrieved, setRetrieved] = useState<{ text: string; expiresAt: string } | null>(null);
+  const [expired, setExpired] = useState(false);
   const [busy, setBusy] = useState(false);
   const [motion, setMotion] = useState(true);
   const pending = useRef<PendingDrop | null>(null);
@@ -35,8 +36,40 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
   }, [motion]);
 
   useEffect(() => {
-    if (created || retrieved !== null) resultHeading.current?.focus();
-  }, [created, retrieved]);
+    if (created || retrieved !== null || expired) resultHeading.current?.focus();
+  }, [created, retrieved, expired]);
+
+  const expireMessage = useCallback(() => {
+    setCreated(null);
+    setRetrieved(null);
+    setMessage("");
+    pending.current = null;
+    setNotice("");
+    setExpired(true);
+    if (window.location.hash) window.history.replaceState(window.history.state, "", window.location.href.split("#")[0]);
+  }, []);
+  const expiresAt = created?.expiresAt ?? retrieved?.expiresAt;
+  useEffect(() => {
+    if (!expiresAt) return;
+    const deadline = Date.parse(expiresAt);
+    let timer: ReturnType<typeof setTimeout>;
+    const check = () => {
+      clearTimeout(timer);
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) expireMessage();
+      else timer = setTimeout(check, Math.min(remaining, 2_147_483_647));
+    };
+    timer = setTimeout(check, 0);
+    window.addEventListener("focus", check);
+    window.addEventListener("pageshow", check);
+    document.addEventListener("visibilitychange", check);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("focus", check);
+      window.removeEventListener("pageshow", check);
+      document.removeEventListener("visibilitychange", check);
+    };
+  }, [expiresAt, expireMessage]);
 
   async function deposit() {
     if (inFlight.current || !message || !invitation.trim() || oversized) return;
@@ -56,6 +89,7 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
       if (!response.ok) throw new Error("Could not create the link. Your message is still here. Try again without changing it to retry the same request.");
       const result = await response.json() as { id?: string; expiresAt?: string };
       if (!result.id || !/^[a-f0-9]{32}$/.test(result.id) || !result.expiresAt || !Number.isFinite(Date.parse(result.expiresAt))) throw new Error("The server response was incomplete. Keep this page open and try again.");
+      if (Date.parse(result.expiresAt) <= Date.now()) { expireMessage(); return; }
       setCreated({ link: `${window.location.origin}/dead-drop/${result.id}#${draft.key}`, expiresAt: result.expiresAt });
       setMessage(""); pending.current = null;
     } catch (error) {
@@ -74,9 +108,15 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
       const response = await fetch(`/api/drops/${retrievalId}`, { cache: "no-store" });
       if (response.status === 404 || response.status === 410) throw new Error("This message is unavailable. It may have expired or the link may be incorrect. Ask the sender to create a new link.");
       if (!response.ok) throw new Error("The service could not load this message. Try opening it again in a moment.");
-      const envelope: unknown = await response.json();
-      try { setRetrieved(await decryptDeadDrop(envelope, key)); }
+      const envelope = await response.json() as { expiresAt?: unknown };
+      if (typeof envelope.expiresAt !== "string" || !Number.isFinite(Date.parse(envelope.expiresAt))) throw new Error("The message expiry could not be verified. Try opening it again.");
+      if (Date.parse(envelope.expiresAt) <= Date.now()) { expireMessage(); return; }
+      let text: string;
+      try { text = await decryptDeadDrop(envelope, key); }
       catch { throw new Error("This key could not unlock the message. Ask the sender for the original complete link and try again."); }
+      // A response or decryption that finishes after the deadline must not reveal text.
+      if (Date.parse(envelope.expiresAt) <= Date.now()) { expireMessage(); return; }
+      setRetrieved({ text, expiresAt: envelope.expiresAt });
     } catch (error) {
       setNotice(error instanceof TypeError ? "Could not reach the service. Check your connection, then try opening the message again." : error instanceof Error ? error.message : "Could not open the message. Try again.");
     } finally { inFlight.current = false; setBusy(false); }
@@ -84,7 +124,8 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
 
   async function copyLink() {
     if (!created) return;
-    try { await navigator.clipboard.writeText(created.link); setNotice("Complete message link copied. Share it with your recipient."); }
+    if (Date.parse(created.expiresAt) <= Date.now()) { expireMessage(); return; }
+    try { await navigator.clipboard.writeText(created.link); if (Date.parse(created.expiresAt) <= Date.now()) { expireMessage(); return; } setNotice("Complete message link copied. Share it with your recipient."); }
     catch { linkField.current?.focus(); linkField.current?.select(); setNotice("Clipboard unavailable. The complete link is selected above. Use your browser’s Copy command to copy it manually."); }
   }
 
@@ -97,9 +138,9 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
       </div><Link className="small" href="/">← Home / Bitcoin hex</Link></div>
     </header>
     <section ref={workspace} className="workspace" aria-label="Secret dead drop">
-      {reader ? <div className="dead-drop-reader">
+      {expired ? <div className="dead-drop-expired"><h2 ref={resultHeading} tabIndex={-1}>MESSAGE EXPIRED</h2><p>This message has expired and has been cleared from this page.</p>{!reader && <button type="button" onClick={() => setExpired(false)}>Create another message</button>}</div> : reader ? <div className="dead-drop-reader">
         {retrieved === null ? <><h2>OPEN YOUR MESSAGE</h2><p>Your complete link includes a decryption key after <code>#</code>. Your browser uses that key to unlock the encrypted message.</p><button type="button" className="primary" onClick={retrieve} disabled={busy}>{busy ? "Opening…" : "Open message"}</button><p>Messages expire 24 hours after creation. Opening a message does not delete it.</p></>
-          : <><h2 ref={resultHeading} tabIndex={-1}>YOUR MESSAGE</h2><pre className="dead-drop-plaintext">{retrieved || "(Empty message)"}</pre><p>This text was decrypted in your browser. Anyone with the complete link can open it until it expires.</p></>}
+          : <><h2 ref={resultHeading} tabIndex={-1}>YOUR MESSAGE</h2><pre className="dead-drop-plaintext">{retrieved.text || "(Empty message)"}</pre><p>This text was decrypted in your browser. It will be cleared from this page when the message expires.</p></>}
       </div> : created ? <div className="dead-drop-success">
         <h2 ref={resultHeading} tabIndex={-1}>YOUR MESSAGE LINK IS READY</h2>
         <p>Copy the complete link and share it with your recipient. Creating a link does not send it to anyone.</p>

@@ -4,10 +4,10 @@ import { createHash, timingSafeEqual } from "node:crypto";
 
 export type StoredDrop = { id: string; v: number; iv: string; ciphertext: string; expiresAt: string };
 
-function getSql() {
+function getSql(signal?: AbortSignal) {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not configured.");
-  return neon(url);
+  return neon(url, signal ? { fetchOptions: { signal } } : undefined);
 }
 
 export async function ensureDeadDropSchema() {
@@ -78,14 +78,27 @@ export async function verifyInvitation(tokenHash: string, idempotencyKey = "") {
 
 export async function getDrop(id: string): Promise<StoredDrop | null> {
   const sql = getSql();
-  await sql`WITH expired AS (SELECT id FROM dead_drops WHERE expires_at <= NOW() LIMIT 100) DELETE FROM dead_drops WHERE id IN (SELECT id FROM expired)`;
+  await cleanupExpiredDrops();
   const found = await sql`SELECT id, version AS v, iv, ciphertext, expires_at AS "expiresAt" FROM dead_drops WHERE id = ${id} AND expires_at > NOW() LIMIT 1`;
   return (found[0] as StoredDrop | undefined) ?? null;
 }
 
-export async function cleanupExpiredDrops() {
-  const sql = getSql();
-  await sql`WITH expired AS (SELECT id FROM dead_drops WHERE expires_at <= NOW() LIMIT 100) DELETE FROM dead_drops WHERE id IN (SELECT id FROM expired)`;
+export async function cleanupExpiredDrops({ batchSize = 100, maxBatches = 1, signal }: { batchSize?: number; maxBatches?: number; signal?: AbortSignal } = {}) {
+  if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 1000 || !Number.isInteger(maxBatches) || maxBatches < 1 || maxBatches > 20) throw new Error("Invalid cleanup limits.");
+  const sql = getSql(signal);
+  let deleted = 0;
+  for (let batch = 0; batch < maxBatches; batch++) {
+    signal?.throwIfAborted();
+    // Row locks make overlapping jobs safe. Database time remains the expiry authority.
+    const rows = await sql`WITH expired AS (SELECT id FROM dead_drops WHERE expires_at <= NOW() ORDER BY expires_at, id LIMIT ${batchSize} FOR UPDATE SKIP LOCKED), removed AS (DELETE FROM dead_drops WHERE id IN (SELECT id FROM expired) RETURNING id) SELECT COUNT(*)::int AS deleted FROM removed`;
+    const count = Number(rows[0]?.deleted);
+    if (!Number.isInteger(count) || count < 0 || count > batchSize) throw new Error("Invalid cleanup result.");
+    deleted += count;
+    if (count < batchSize) break;
+  }
+  // Includes rows locked by another run, so partial work never reports a drained queue.
+  const remaining = await sql`SELECT EXISTS(SELECT 1 FROM dead_drops WHERE expires_at <= NOW()) AS remaining`;
+  return { deleted, remaining: remaining[0]?.remaining !== false };
 }
 
 export async function createInvitation(tokenHash: string, deposits: number, expiresAt: Date) {

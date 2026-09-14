@@ -1,0 +1,10 @@
+{
+  "results": [
+    "Already-open plaintext and URL key clear at expiry.",
+    "Sender link and key clear at expiry; a new message starts empty.",
+    "Focus, visibility restoration and pageshow enforce expiry after suspended timers.",
+    "Responses and decryption finishing after expiry never reveal plaintext.",
+    "Invalid expiry fails closed."
+  ],
+  "errors": []
+}

@@ -1,0 +1,17 @@
+{
+  "simulatedApi": true,
+  "realBrowserEncryption": true,
+  "remainsVisibleAfterExpiry": true,
+  "readsAfterExpiry": 0,
+  "reopenedExpiredResponseHidesMessage": true,
+  "browserStorage": {
+    "localKeys": [
+      "@appkit/connection_status",
+      "wagmi.store",
+      "@appkit/active_caip_network_id",
+      "@appkit/active_namespace"
+    ],
+    "sessionKeys": []
+  },
+  "errors": []
+}

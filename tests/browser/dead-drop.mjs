@@ -37,7 +37,7 @@ await context.route("**/*", async route => {
     gets++;
     if (getMode === "network") return route.abort();
     if (getMode !== "ok") return route.fulfill({ status: Number(getMode), json: { error: "Synthetic unavailable response" } });
-    return route.fulfill({ json: payload });
+    return route.fulfill({ json: { ...payload, expiresAt: new Date(Date.now() + 86400000).toISOString() } });
   }
   if (url.pathname.startsWith("/api/invitations")) throw new Error("Unexpected invitation API call");
   return route.continue();
