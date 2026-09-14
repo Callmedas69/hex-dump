@@ -1298,6 +1298,9 @@ footer {
 .home-header .tool-choice .tool-access-note { font-size: 12px; color: var(--muted); margin: 12px 0 0; }
 .home-header .tool-entry { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 14px; border: 1px solid var(--ink); background: var(--ink); color: var(--panel); font-size: 13px; margin-top: auto; }
 .home-page .hex-introduction .hello-example { padding: 0 0 22px; }
+.home-page .task-choice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: auto; }
+.home-page .task-choice-actions a { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; }
+.home-page .task-choice-actions button { flex: 0 0 auto; }
 .home-page .hex-section-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; }
 .home-page .hex-section-actions a, .home-page .hex-access-details summary { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; }
 .home-page .hex-access-details { border-top: 1px solid var(--line); margin-top: 18px; padding-top: 8px; }

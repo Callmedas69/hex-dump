@@ -152,25 +152,24 @@ export default function Home() {
               <article>
                 <h3>Text to hex (encode)</h3>
                 <p>Turn a message into hexadecimal bytes. Supports emoji and international characters.</p>
-                <button type="button" onClick={() => { setMode("encode"); access.enterWorkspace(); }}>Encode text</button>
+                <div className="task-choice-actions">
+                  <button type="button" onClick={() => { setMode("encode"); access.enterWorkspace(); }}>Encode text</button>
+                  <a href="#bitcoin-example" onClick={event => {
+                    const example = document.getElementById("bitcoin-example");
+                    if (example instanceof HTMLDetailsElement) {
+                      event.preventDefault();
+                      example.open = true;
+                      example.querySelector("summary")?.focus();
+                      example.scrollIntoView({ block: "start" });
+                    }
+                  }}>See a Bitcoin example ↓</a>
+                </div>
               </article>
               <article>
                 <h3>Hex to text (decode)</h3>
                 <p>Inspect hexadecimal data for readable passages. Some bytes are not text.</p>
                 <button type="button" onClick={() => { setMode("decode"); access.enterWorkspace(); }}>Decode hex</button>
               </article>
-            </div>
-            <div className="hex-section-actions">
-              {access.granted && <button type="button" onClick={access.enterWorkspace}>Open hex tool</button>}
-              <a href="#bitcoin-example" onClick={event => {
-                const example = document.getElementById("bitcoin-example");
-                if (example instanceof HTMLDetailsElement) {
-                  event.preventDefault();
-                  example.open = true;
-                  example.querySelector("summary")?.focus();
-                  example.scrollIntoView({ block: "start" });
-                }
-              }}>See a Bitcoin example ↓</a>
             </div>
             <details className="access-details hex-access-details">
               <summary>Hex tool access details</summary>

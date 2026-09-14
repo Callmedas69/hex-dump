@@ -149,6 +149,8 @@ try {
     assert.ok(metrics.actionBottom <= height, `Tool actions below fold at ${width}px: ${metrics.actionBottom}`);
     assert.equal(await page.locator(".hero-message").innerText(), "Work with hex. Share private messages.");
     assert.equal(await page.locator(".home-header #hex-access").count(), 0);
+    assert.equal(await page.getByRole("button", { name: "Open hex tool", exact: true }).count(), 0);
+    assert.equal(await page.locator(".task-choice-actions").first().getByRole("link", { name: "See a Bitcoin example ↓", exact: true }).count(), 1);
     assert.match(await page.title(), /Hex Tools & Private Message Links/);
     await shot(page, `${unavailable ? "unavailable" : "configured"}-${width}`);
     if (width === 390) await shot(page, `${unavailable ? "unavailable" : "configured"}-390-first-screen`, false);
@@ -348,8 +350,7 @@ try {
     await visibleWorkspace(page, true);
     assert.equal(await page.locator("#hex-input").inputValue(), "00 48 65 6C 6C 6F");
     assert.notEqual(await page.evaluate(() => document.activeElement?.id), "hex-input");
-    await page.getByRole("button", { name: "Open hex tool", exact: true }).click();
-    await focused(page, "hex-input");
+    await page.locator("#hex-input").focus();
     failRpc = true;
     await page.evaluate(() => window.hexTestWallet.setAccount("3"));
     await visibleWorkspace(page, false);
