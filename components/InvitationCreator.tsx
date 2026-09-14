@@ -48,11 +48,11 @@ export function InvitationCreator({ onCreated }: { onCreated?: (token: string) =
       <div className="invitation-controls">
         <ConnectButton accountStatus="address" showBalance={false} />
         <label>Messages allowed<input disabled={busy} inputMode="numeric" min="1" max="100" step="1" type="number" value={slots} onChange={event => setSlots(event.target.value)} aria-describedby="invitation-limits" /></label>
-        <label>Code expires in (days)<input disabled={busy} inputMode="numeric" min="1" max="30" step="1" type="number" value={days} onChange={event => setDays(event.target.value)} aria-describedby="invitation-limits" /></label>
+        <label>Invitation code valid for (days)<input disabled={busy} inputMode="numeric" min="1" max="30" step="1" type="number" value={days} onChange={event => setDays(event.target.value)} aria-describedby="invitation-limits" /></label>
         {isConnected && chainId !== policy.chainId && <button type="button" disabled={switching || busy} onClick={() => switchChain({ chainId: policy.chainId })}>Switch to Robinhood Chain</button>}
         <button type="button" className="primary" disabled={!isConnected || chainId !== policy.chainId || busy || !validLimits} onClick={create}>{busy ? "Authorizing…" : "Create invitation code"}</button>
       </div>
-      <p id="invitation-limits">Choose 1–100 messages and 1–30 days, using whole numbers. The code expiry controls how long it can create links. Each message expires 24 hours after its link is created.</p>
+      <p id="invitation-limits">Choose 1–100 messages and 1–30 days, using whole numbers. This controls how long the invitation code can create new links. Each message link expires 24 hours after it is created.</p>
       {!validLimits && <p role="alert">Enter a whole number within each range before creating a code.</p>}
     </> : <p>Creating invitation codes is currently unavailable because wallet access is not configured. You can still use an existing code above.</p>}
     <p className="notice" role="status" aria-live="polite">{notice}</p>

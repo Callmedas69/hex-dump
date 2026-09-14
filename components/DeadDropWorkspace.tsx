@@ -7,7 +7,17 @@ import { decryptDeadDrop, encryptDeadDrop, MAX_PLAINTEXT_BYTES } from "@/lib/dea
 import { InvitationCreator } from "./InvitationCreator";
 
 type PendingDrop = Awaited<ReturnType<typeof encryptDeadDrop>> & { message: string; invitation: string; idempotencyKey: string };
-type CreatedDrop = { link: string; expiresAt: string };
+type CreatedDrop = { link: string; onionLink: string | null; expiresAt: string };
+
+function configuredOrigin(value: string | undefined) {
+  const raw = value?.trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.origin;
+  } catch { return null; }
+}
 
 export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
   const [message, setMessage] = useState("");
@@ -90,7 +100,9 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
       const result = await response.json() as { id?: string; expiresAt?: string };
       if (!result.id || !/^[a-f0-9]{32}$/.test(result.id) || !result.expiresAt || !Number.isFinite(Date.parse(result.expiresAt))) throw new Error("The server response was incomplete. Keep this page open and try again.");
       if (Date.parse(result.expiresAt) <= Date.now()) { expireMessage(); return; }
-      setCreated({ link: `${window.location.origin}/dead-drop/${result.id}#${draft.key}`, expiresAt: result.expiresAt });
+      const path = `/dead-drop/${result.id}#${draft.key}`;
+      const onionOrigin = configuredOrigin(process.env.NEXT_PUBLIC_DEAD_DROP_ONION_URL);
+      setCreated({ link: `${window.location.origin}${path}`, onionLink: onionOrigin ? `${onionOrigin}${path}` : null, expiresAt: result.expiresAt });
       setMessage(""); pending.current = null;
     } catch (error) {
       setNotice(error instanceof TypeError ? "Could not reach the service. Your message is still here. Check your connection and try again." : error instanceof Error ? error.message : "Could not create the link. Please try again.");
@@ -122,10 +134,10 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
     } finally { inFlight.current = false; setBusy(false); }
   }
 
-  async function copyLink() {
-    if (!created) return;
+  async function copyLink(link: string | null, label: string) {
+    if (!created || !link) return;
     if (Date.parse(created.expiresAt) <= Date.now()) { expireMessage(); return; }
-    try { await navigator.clipboard.writeText(created.link); if (Date.parse(created.expiresAt) <= Date.now()) { expireMessage(); return; } setNotice("Complete message link copied. Share it with your recipient."); }
+    try { await navigator.clipboard.writeText(link); if (Date.parse(created.expiresAt) <= Date.now()) { expireMessage(); return; } setNotice(`${label} copied. Share it with your recipient.`); }
     catch { linkField.current?.focus(); linkField.current?.select(); setNotice("Clipboard unavailable. The complete link is selected above. Use your browser’s Copy command to copy it manually."); }
   }
 
@@ -146,9 +158,11 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
         <p>Copy the complete link and share it with your recipient. Creating a link does not send it to anyone.</p>
         <p>Message expires: <time dateTime={created.expiresAt}>{new Date(created.expiresAt).toLocaleString()}</time> (your local time).</p>
         <label htmlFor="message-link">Complete message link</label>
-        <textarea ref={linkField} id="message-link" readOnly value={created.link} rows={6} spellCheck={false} aria-describedby="message-link-help" onFocus={event => event.currentTarget.select()} />
+        <textarea ref={linkField} id="message-link" readOnly value={created.link} rows={4} spellCheck={false} aria-describedby="message-link-help" onFocus={event => event.currentTarget.select()} />
+        <div className="dead-drop-actions"><button type="button" className="primary" onClick={() => copyLink(created.link, "Web message link")}>Copy message link</button><a className="dead-drop-open" href={created.link}>Open message</a></div>
+        {created.onionLink ? <><label htmlFor="onion-message-link">Tor onion link</label><textarea id="onion-message-link" readOnly value={created.onionLink} rows={4} spellCheck={false} aria-describedby="message-link-help" onFocus={event => event.currentTarget.select()} /><div className="dead-drop-actions"><button type="button" onClick={() => copyLink(created.onionLink, "Onion message link")}>Copy onion link</button><a className="dead-drop-open" href={created.onionLink}>Open onion link</a></div></> : <p className="notice">Onion link is not configured for this deployment. Use the web link above.</p>}
         <p id="message-link-help">Keep everything after <code>#</code> in the link. Anyone with the complete link can read the message. Save it before leaving this page; we cannot recover a lost key.</p>
-        <div className="dead-drop-actions"><button type="button" className="primary" onClick={copyLink}>Copy message link</button><a className="dead-drop-open" href={created.link}>Open message</a><button type="button" onClick={() => { setCreated(null); setNotice(""); }}>Create another message</button></div>
+        <div className="dead-drop-actions"><button type="button" onClick={() => { setCreated(null); setNotice(""); }}>Create another message</button></div>
       </div> : <div className="dead-drop-compose">
         <h2>CREATE A MESSAGE LINK</h2>
         <div className="dead-drop-field"><label htmlFor="invitation">1. Enter your invitation code</label><p id="invitation-help">An invitation code lets you create a message link. If someone gave you a code, paste it here. No wallet is needed to use it.</p><input id="invitation" value={invitation} disabled={busy} onChange={event => setInvitation(event.target.value)} autoComplete="off" autoCapitalize="none" spellCheck={false} aria-describedby="invitation-help" />
