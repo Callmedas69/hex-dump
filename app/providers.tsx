@@ -6,11 +6,12 @@ import { WagmiProvider, createConfig, http, injected } from "wagmi";
 import { defineChain } from "viem";
 import { useState } from "react";
 import "@rainbow-me/rainbowkit/styles.css";
+import { TOKEN_RPC_TIMEOUT_MS } from "../lib/tokenCheck";
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 const robinhood = defineChain({ id: 4663, name: "Robinhood Chain", nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrls: { default: { http: ["https://rpc.mainnet.chain.robinhood.com"] } }, blockExplorers: { default: { name: "Blockscout", url: "https://robinhoodchain.blockscout.com" } } });
 const transports = {
-  [robinhood.id]: http(process.env.NEXT_PUBLIC_ROBINHOOD_RPC_URL || "https://rpc.mainnet.chain.robinhood.com"),
+  [robinhood.id]: http(process.env.NEXT_PUBLIC_ROBINHOOD_RPC_URL || "https://rpc.mainnet.chain.robinhood.com", { timeout: TOKEN_RPC_TIMEOUT_MS, retryCount: 0 }),
 };
 const chains = [robinhood] as const;
 const config = projectId

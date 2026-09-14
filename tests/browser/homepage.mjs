@@ -8,7 +8,8 @@ import { encodeFunctionResult, decodeFunctionData, erc20Abi, multicall3Abi } fro
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE_URL || "playwright");
 const base = process.env.HEX_TEST_URL || "http://localhost:3100";
 const unavailable = process.argv.includes("--unavailable");
-const output = resolve("docs/audits/assets/2026-09-14-homepage-two-tools");
+const tokenChecks = process.argv.includes("--token-check");
+const output = resolve(tokenChecks ? "docs/audits/assets/2026-09-14-token-check" : "docs/audits/assets/2026-09-14-homepage-two-tools");
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const observations = [];
@@ -17,6 +18,8 @@ const blockedExternalUrls = new Set();
 const expectedNetworkErrors = [];
 let balance = 10000n;
 let failRpc = false;
+let hangRpc = false;
+const heldRpc = [];
 let symbol = "USDG";
 let xConfigured = false;
 let postCount = 0;
@@ -84,7 +87,9 @@ async function createPage(viewport = { width: 1440, height: 1000 }, reducedMotio
             : request.method === "eth_chainId" ? "0x1237" : request.method === "eth_blockNumber" ? "0x100" : "0x0";
           return { jsonrpc: "2.0", id: request.id, result };
         };
-        return route.fulfill({ json: Array.isArray(requests) ? requests.map(reply) : reply(requests) });
+        const json = Array.isArray(requests) ? requests.map(reply) : reply(requests);
+        if (hangRpc) { heldRpc.push({ route, json }); return; }
+        return route.fulfill({ json });
       }
     }
     if (url.origin !== new URL(base).origin) {
@@ -205,6 +210,51 @@ try {
   await shot(privatePage, "dead-drop-smoke");
   await privatePage.close();
   observations.push({ name: "public dead-drop discovery, keyboard navigation, return and shared CSS", passed: true });
+
+  if (tokenChecks && !unavailable) {
+    console.log("Checking stalled RPC, cancellation and offline recovery");
+    const page = await createPage();
+    await page.goto(base, { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Decode hex", exact: true }).click();
+    hangRpc = true;
+    const started = Date.now();
+    await connect(page);
+    await page.getByRole("heading", { name: "Checking your balance…", exact: true }).waitFor();
+    await page.getByRole("button", { name: "Check again", exact: true }).waitFor({ timeout: 16000 });
+    const elapsed = Date.now() - started;
+    assert.ok(elapsed < 17000, `Stalled balance read took ${elapsed}ms to become actionable`);
+    await visibleWorkspace(page, false);
+    assert.match(await page.locator("#hex-access").innerText(), /couldn't read your balance|did not respond within 12 seconds/);
+    await shot(page, "rpc-unavailable");
+    // Retry, then change wallets before the old read returns.
+    await page.getByRole("button", { name: "Check again", exact: true }).click();
+    await page.waitForTimeout(300);
+    hangRpc = false;
+    balance = 0n;
+    await page.evaluate(() => window.hexTestWallet.setAccount("8"));
+    await page.getByRole("heading", { name: "More USDG is needed", exact: true }).waitFor();
+    for (const held of heldRpc.splice(0)) await held.route.fulfill({ json: held.json }).catch(() => {});
+    await page.waitForTimeout(300);
+    await visibleWorkspace(page, false);
+    assert.match(await page.locator("#hex-access").innerText(), /Your balance: 0 USDG/);
+    balance = 10000n;
+    await page.getByRole("button", { name: "Check again", exact: true }).click();
+    await visibleWorkspace(page, true);
+    await focused(page, "hex-input");
+    await page.locator("#hex-input").fill("48 69");
+    await page.context().setOffline(true);
+    await page.evaluate(() => { window.dispatchEvent(new Event("offline")); window.hexTestWallet.setAccount("9"); });
+    await page.getByRole("heading", { name: "You're offline", exact: true }).waitFor();
+    await visibleWorkspace(page, false);
+    assert.equal(await page.getByRole("button", { name: "Waiting for connection", exact: true }).isDisabled(), true);
+    await shot(page, "offline");
+    await page.context().setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event("online")));
+    await visibleWorkspace(page, true);
+    assert.equal(await page.locator("#hex-input").inputValue(), "48 69");
+    observations.push({ name: "stalled RPC ends, stale wallet result ignored, zero balance and offline/reconnect recovery", elapsed, passed: true });
+    await page.close();
+  }
 
   if (!unavailable) {
     console.log("Checking wallet flow");

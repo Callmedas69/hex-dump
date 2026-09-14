@@ -19,6 +19,8 @@ Development requires **at least 0.01 USDG on Robinhood Chain mainnet** (chain ID
 
 RainbowKit uses [Robinhood's mainnet configuration](https://docs.robinhood.com/chain/connecting/): ETH for gas, `https://rpc.mainnet.chain.robinhood.com` for public RPC, and `https://robinhoodchain.blockscout.com` for the explorer. Set `NEXT_PUBLIC_ROBINHOOD_RPC_URL` to use your own provider.
 
+Token checks have a 12-second overall deadline and an 8-second HTTP request timeout, with automatic transport/query retries disabled. A failed check offers **Check again** and never treats a network error as a zero balance. Offline queries show **You're offline** and resume on reconnect. Successful reads continue refreshing every 30 seconds; failed checks stop periodic retries. The public Robinhood endpoint is rate-limited and is not recommended for production in the linked official documentation. Configure a production provider through `NEXT_PUBLIC_ROBINHOOD_RPC_URL` and rebuild/redeploy when changing that public setting.
+
 RainbowKit connects injected wallets without a WalletConnect project ID. Configure `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` to enable its standard mobile/remote wallet options. Optional RPC URL settings are documented in `.env.example`; browser RPC keys should be restricted by origin.
 
 ## Production token policy
@@ -74,6 +76,8 @@ npm run build
 Tests cover canonical Genesis bytes/hashes, codec edge cases, gate policy, weighted X text length, image validation, mocked media/post ordering and failures, OAuth state handling, and duplicate submissions.
 
 The focused production-browser checks are in `tests/browser/homepage.mjs`. They cover visible entry destinations, keyboard focus, mode/draft preservation, wallet network changes, RPC and metadata failures, input feedback, public sharing previews and responsive layouts. The test supplies its own wallet and RPC responses; it never signs, transfers tokens or posts to X.
+
+Add `--token-check --flow-only` to the configured browser pass to verify a stalled RPC reaches an actionable result, a late response from the previous wallet cannot grant access, and offline/reconnect preserves drafts. See `tests/tokenCheck.test.mjs` for deadline and cancellation tests.
 
 With Playwright available, start a local production server and run:
 
