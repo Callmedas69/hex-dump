@@ -151,7 +151,7 @@ export function DeadDropWorkspace({ retrievalId }: { retrievalId?: string }) {
     </header>
     <section ref={workspace} className="workspace" aria-label="Secret dead drop">
       {expired ? <div className="dead-drop-expired"><h2 ref={resultHeading} tabIndex={-1}>MESSAGE EXPIRED</h2><p>This message has expired and has been cleared from this page.</p>{!reader && <button type="button" onClick={() => setExpired(false)}>Create another message</button>}</div> : reader ? <div className="dead-drop-reader">
-        {retrieved === null ? <><h2>OPEN YOUR MESSAGE</h2><p>Your complete link includes a decryption key after <code>#</code>. Your browser uses that key to unlock the encrypted message.</p><button type="button" className="primary" onClick={retrieve} disabled={busy}>{busy ? "Opening…" : "Open message"}</button><p>Messages expire 24 hours after creation. Opening a message does not delete it.</p></>
+        {retrieved === null ? <><h2>DECRYPT YOUR MESSAGE</h2><p>Your complete link includes a decryption key after <code>#</code>. Your browser uses that key to unlock the encrypted message.</p><button type="button" className="primary" onClick={retrieve} disabled={busy}>{busy ? "Opening…" : "Open message"}</button><p>Messages expire 24 hours after creation. Opening a message does not delete it.</p></>
           : <><h2 ref={resultHeading} tabIndex={-1}>YOUR MESSAGE</h2><pre className="dead-drop-plaintext">{retrieved.text || "(Empty message)"}</pre><p>This text was decrypted in your browser. It will be cleared from this page when the message expires.</p></>}
       </div> : created ? <div className="dead-drop-success">
         <h2 ref={resultHeading} tabIndex={-1}>YOUR MESSAGE LINK IS READY</h2>
