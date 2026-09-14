@@ -1,5 +1,24 @@
 export const TOKEN_CHECK_TIMEOUT_MS = 12_000;
 export const TOKEN_RPC_TIMEOUT_MS = 8_000;
+export const TOKEN_PRIMARY_TIMEOUT_MS = 6_000;
+
+/** Reserve time for the connected wallet when the app's RPC cannot be reached. */
+export function runTokenCheckWithFallback<T>(
+  primary: () => Promise<T>,
+  wallet: () => Promise<T>,
+  signal: AbortSignal,
+  primaryTimeoutMs = TOKEN_PRIMARY_TIMEOUT_MS,
+  timeoutMs = TOKEN_CHECK_TIMEOUT_MS,
+): Promise<T> {
+  return runTokenCheck(async () => {
+    try {
+      return await runTokenCheck(primary, signal, primaryTimeoutMs);
+    } catch (error) {
+      if (signal.aborted) throw error;
+      return wallet();
+    }
+  }, signal, timeoutMs);
+}
 
 export class TokenCheckTimeoutError extends Error {
   constructor() {

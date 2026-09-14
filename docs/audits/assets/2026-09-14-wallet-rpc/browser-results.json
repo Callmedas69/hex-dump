@@ -1,0 +1,121 @@
+[
+  {
+    "name": "legacy fragment and reduced motion",
+    "passed": true
+  },
+  {
+    "name": "200% zoom equivalent reflow",
+    "cssViewport": "720x500",
+    "passed": true
+  },
+  {
+    "name": "public dead-drop discovery, keyboard navigation, return and shared CSS",
+    "passed": true
+  },
+  {
+    "name": "closed/stalled public RPC recovers through wallet; zero balance, metadata and actual chain are enforced",
+    "elapsed": 6528,
+    "calls": [
+      {
+        "data": "0x70a082310000000000000000000000001111111111111111111111111111111111111111",
+        "from": "0x1111111111111111111111111111111111111111",
+        "to": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"
+      },
+      {
+        "data": "0x313ce567",
+        "from": "0x1111111111111111111111111111111111111111",
+        "to": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"
+      },
+      {
+        "data": "0x95d89b41",
+        "from": "0x1111111111111111111111111111111111111111",
+        "to": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"
+      }
+    ],
+    "requests": [
+      "eth_accounts",
+      "eth_chainId",
+      "wallet_requestPermissions",
+      "eth_requestAccounts",
+      "eth_chainId",
+      "eth_accounts",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_call",
+      "eth_call",
+      "eth_call",
+      "eth_chainId",
+      "eth_accounts",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_call",
+      "eth_call",
+      "eth_call",
+      "eth_chainId",
+      "eth_accounts",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_call",
+      "eth_call",
+      "eth_call",
+      "eth_chainId",
+      "eth_accounts",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_accounts",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_call",
+      "eth_call",
+      "eth_call",
+      "eth_chainId"
+    ],
+    "passed": true
+  },
+  {
+    "name": "stalled RPC ends, stale wallet result ignored, zero balance and offline/reconnect recovery",
+    "elapsed": 7131,
+    "passed": true
+  },
+  {
+    "name": "access, draft, workspace and sharing transitions",
+    "passed": true,
+    "imageSize": [
+      1600,
+      900
+    ],
+    "walletRequests": [
+      "eth_accounts",
+      "eth_chainId",
+      "wallet_requestPermissions",
+      "eth_requestAccounts",
+      "eth_chainId",
+      "eth_accounts",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_chainId",
+      "eth_call",
+      "eth_call",
+      "eth_call",
+      "wallet_switchEthereumChain",
+      "eth_chainId"
+    ]
+  },
+  {
+    "name": "network",
+    "postCount": 0,
+    "rpcMethods": [
+      "eth_call"
+    ],
+    "errors": [],
+    "intentionallyBlockedExternalResources": [
+      "https://pulse.walletconnect.org/e",
+      "https://api.web3modal.org/appkit/v1/config",
+      "https://rpc.mainnet.chain.robinhood.com/"
+    ]
+  }
+]

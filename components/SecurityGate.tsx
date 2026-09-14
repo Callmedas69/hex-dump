@@ -4,10 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { erc20Abi, formatUnits } from "viem";
 import { useAccount, useConfig, useSwitchChain } from "wagmi";
-import { readContracts } from "wagmi/actions";
+import { getConnectorClient, readContracts } from "wagmi/actions";
+import { getChainId, readContract } from "viem/actions";
 import { useQuery } from "@tanstack/react-query";
 import { developmentPolicy, hasTokenAccess, productionPolicy } from "../lib/tokenGate";
-import { runTokenCheck, TokenCheckTimeoutError } from "../lib/tokenCheck";
+import { runTokenCheckWithFallback, TokenCheckTimeoutError } from "../lib/tokenCheck";
 
 export type AccessPresentation = {
   granted: boolean;
@@ -20,7 +21,7 @@ export function SecurityGate({ children, introduction }: {
   children: React.ReactNode | ((granted: boolean) => React.ReactNode);
   introduction?: (access: AccessPresentation) => React.ReactNode;
 }) {
-  const { address, isConnected, chainId } = useAccount();
+  const { address, isConnected, chainId, connector } = useAccount();
   const config = useConfig();
   const { switchChain, isPending: switching } = useSwitchChain();
   const [sandbox, setSandbox] = useState(false);
@@ -41,18 +42,34 @@ export function SecurityGate({ children, introduction }: {
   const supported = policy && policy.chainId === 4663;
   const enabled = !!(supported && address && isConnected && chainId === policy.chainId);
   const query = useQuery({
-    queryKey: ["token-access", chainId, address, policy?.chainId, policy?.address, policy?.symbol, policy?.decimals, policy?.minimumRawBalance.toString()],
+    queryKey: ["token-access", connector?.uid, chainId, address, policy?.chainId, policy?.address, policy?.symbol, policy?.decimals, policy?.minimumRawBalance.toString()],
     queryFn: ({ signal }) => {
       if (!policy || !address || !enabled) throw new Error("Connect a wallet on the required network.");
       const contract = { address: policy.address, abi: erc20Abi, chainId: policy.chainId } as const;
-      return runTokenCheck(() => readContracts(config, {
+      return runTokenCheckWithFallback(() => readContracts(config, {
         contracts: [
           { ...contract, functionName: "balanceOf", args: [address] },
           { ...contract, functionName: "decimals" },
           { ...contract, functionName: "symbol" },
         ],
         allowFailure: false,
-      }), signal);
+      }), async () => {
+        if (!connector) throw new Error("The wallet is no longer connected.");
+        const wallet = await getConnectorClient(config, { connector, account: address, chainId: policy.chainId });
+        // Read the provider's actual chain, not just the connector's cached chain.
+        const assertNetwork = async () => {
+          if (await getChainId(wallet) !== policy.chainId) throw new Error("Wallet network changed during the balance check.");
+          if (signal.aborted) throw new DOMException("Check cancelled.", "AbortError");
+        };
+        await assertNetwork();
+        const result = await Promise.all([
+          readContract(wallet, { ...contract, functionName: "balanceOf", args: [address] }),
+          readContract(wallet, { ...contract, functionName: "decimals" }),
+          readContract(wallet, { ...contract, functionName: "symbol" }),
+        ] as const);
+        await assertNetwork();
+        return result;
+      }, signal);
     },
     enabled,
     // Failed checks stay actionable instead of restarting the spinner every 30 seconds.
@@ -123,8 +140,8 @@ export function SecurityGate({ children, introduction }: {
     : chainId !== policy.chainId ? "This tool checks holdings on Robinhood Chain mainnet."
     : query.isPaused ? "Reconnect to the internet to check your token balance. The check will resume when your connection returns."
     : query.error instanceof TokenCheckTimeoutError && !query.isFetching ? "The network did not respond within 12 seconds. Your balance has not been verified. Check your connection and try again."
-    : query.isFetching ? "Reading your token balance from Robinhood Chain. This check can take up to 12 seconds."
-    : query.isError ? "We couldn't read your balance from Robinhood Chain. This does not mean your balance is zero. Check your connection and try again."
+    : query.isFetching ? "Reading your token balance from Robinhood Chain, using your wallet's connection if needed. This check can take up to 12 seconds."
+    : query.isError ? "We couldn't read your balance through the website or your wallet. This does not mean your balance is zero. Check your wallet's Robinhood Chain connection and try again."
     : query.isPending ? "Checking your token balance…"
     : !metadataMatches ? "The token details could not be verified. Try the balance check again."
     : `Your balance: ${formatUnits(balance ?? 0n, policy.decimals)} ${policy.symbol}. Keep the required amount in your wallet to use the tool.`;

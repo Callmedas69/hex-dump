@@ -8,8 +8,9 @@ import { encodeFunctionResult, decodeFunctionData, erc20Abi, multicall3Abi } fro
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE_URL || "playwright");
 const base = process.env.HEX_TEST_URL || "http://localhost:3100";
 const unavailable = process.argv.includes("--unavailable");
-const tokenChecks = process.argv.includes("--token-check");
-const output = resolve(tokenChecks ? "docs/audits/assets/2026-09-14-token-check" : "docs/audits/assets/2026-09-14-homepage-two-tools");
+const walletRpcChecks = process.argv.includes("--wallet-rpc");
+const tokenChecks = walletRpcChecks || process.argv.includes("--token-check");
+const output = resolve(walletRpcChecks ? "docs/audits/assets/2026-09-14-wallet-rpc" : tokenChecks ? "docs/audits/assets/2026-09-14-token-check" : "docs/audits/assets/2026-09-14-homepage-two-tools");
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const observations = [];
@@ -18,6 +19,7 @@ const blockedExternalUrls = new Set();
 const expectedNetworkErrors = [];
 let balance = 10000n;
 let failRpc = false;
+let closeRpc = false;
 let hangRpc = false;
 const heldRpc = [];
 let symbol = "USDG";
@@ -40,10 +42,11 @@ async function createPage(viewport = { width: 1440, height: 1000 }, reducedMotio
   await context.addInitScript(() => {
     const listeners = new Map();
     const wallet = {
-      connected: false, chain: "0x1237", requests: [],
+      connected: false, chain: "0x1237", chainReply: null, requests: [], calls: [], replies: null,
+      account: `0x${"1".repeat(40)}`,
       emit(event, value) { for (const cb of listeners.get(event) || []) cb(value); },
       setChain(chain) { this.chain = chain; this.emit("chainChanged", chain); },
-      setAccount(lastDigit) { this.emit("accountsChanged", [`0x${"1".repeat(39)}${lastDigit}`]); },
+      setAccount(lastDigit) { this.account = `0x${"1".repeat(39)}${lastDigit}`; this.emit("accountsChanged", [this.account]); },
       disconnect() { this.connected = false; this.emit("accountsChanged", []); },
     };
     window.hexTestWallet = wallet;
@@ -53,9 +56,14 @@ async function createPage(viewport = { width: 1440, height: 1000 }, reducedMotio
       removeListener(event, cb) { listeners.set(event, (listeners.get(event) || []).filter(item => item !== cb)); },
       async request({ method, params }) {
         wallet.requests.push(method);
-        if (method === "eth_requestAccounts") { wallet.connected = true; return [`0x${"1".repeat(40)}`]; }
-        if (method === "eth_accounts") return wallet.connected ? [`0x${"1".repeat(40)}`] : [];
-        if (method === "eth_chainId") return wallet.chain;
+        if (method === "eth_requestAccounts") { wallet.connected = true; return [wallet.account]; }
+        if (method === "eth_accounts") return wallet.connected ? [wallet.account] : [];
+        if (method === "eth_chainId") return wallet.chainReply || wallet.chain;
+        if (method === "eth_call" && wallet.replies) {
+          wallet.calls.push(params[0]);
+          const result = wallet.replies[params[0].data.slice(0, 10)];
+          if (result) return result;
+        }
         if (method === "wallet_switchEthereumChain") { wallet.setChain(params[0].chainId); return null; }
         if (method === "wallet_requestPermissions") { wallet.connected = true; return [{ parentCapability: "eth_accounts" }]; }
         if (method === "wallet_getPermissions") return wallet.connected ? [{ parentCapability: "eth_accounts" }] : [];
@@ -80,6 +88,7 @@ async function createPage(viewport = { width: 1440, height: 1000 }, reducedMotio
       let requests;
       try { requests = route.request().postDataJSON(); } catch { return route.continue(); }
       if (Array.isArray(requests) || requests?.jsonrpc) {
+        if (closeRpc) { blockedExternalUrls.add(url.href); return route.abort("connectionclosed"); }
         const reply = request => {
           rpcCalls.push(request.method);
           if (failRpc && request.method === "eth_call") return { jsonrpc: "2.0", id: request.id, error: { code: -32000, message: "Simulated RPC failure" } };
@@ -104,7 +113,7 @@ async function createPage(viewport = { width: 1440, height: 1000 }, reducedMotio
   page.on("console", message => {
     if (message.type() !== "error") return;
     const url = message.location().url;
-    if (message.text() === "Failed to load resource: net::ERR_FAILED" && blockedExternalUrls.has(url)) {
+    if (/^Failed to load resource: net::ERR_(FAILED|CONNECTION_CLOSED)$/.test(message.text()) && blockedExternalUrls.has(url)) {
       const parsed = new URL(url);
       expectedNetworkErrors.push(`${parsed.origin}${parsed.pathname}`);
     } else errors.push(`${message.text()} (${url})`);
@@ -210,6 +219,62 @@ try {
   await shot(privatePage, "dead-drop-smoke");
   await privatePage.close();
   observations.push({ name: "public dead-drop discovery, keyboard navigation, return and shared CSS", passed: true });
+
+  if (walletRpcChecks && !unavailable) {
+    console.log("Checking wallet RPC fallback after a closed public connection");
+    const page = await createPage();
+    await page.goto(base, { waitUntil: "networkidle" });
+    const setWalletReplies = async () => {
+      await page.evaluate(replies => { window.hexTestWallet.replies = replies; }, Object.fromEntries(["0x70a08231", "0x313ce567", "0x95d89b41"].map(selector => [selector, contractResult(selector)])));
+    };
+    balance = 501403n;
+    await setWalletReplies();
+    closeRpc = true;
+    await page.getByRole("button", { name: "Decode hex", exact: true }).click();
+    await connect(page);
+    await visibleWorkspace(page, true);
+    assert.match(await page.locator(".clearance-detail").innerText(), /0.501403 USDG/);
+    const calls = await page.evaluate(() => window.hexTestWallet.calls);
+    assert.equal(calls.length, 3);
+    assert.ok(calls.every(call => call.to.toLowerCase() === "0x5fc5360d0400a0fd4f2af552add042d716f1d168"));
+    assert.ok(calls.some(call => call.data === `0x70a08231${"1".repeat(40).padStart(64, "0")}`));
+    await shot(page, "wallet-recovered");
+    balance = 0n;
+    await setWalletReplies();
+    await page.evaluate(() => window.hexTestWallet.setAccount("2"));
+    await page.getByRole("heading", { name: "More USDG is needed", exact: true }).waitFor();
+    await visibleWorkspace(page, false);
+    balance = 501403n;
+    symbol = "OTHER";
+    await setWalletReplies();
+    await page.getByRole("button", { name: "Check again", exact: true }).click();
+    await page.getByText("The token details could not be verified.", { exact: false }).waitFor();
+    await visibleWorkspace(page, false);
+    symbol = "USDG";
+    await setWalletReplies();
+    await page.evaluate(() => { window.hexTestWallet.chainReply = "0x1"; });
+    const readsBefore = await page.evaluate(() => window.hexTestWallet.calls.length);
+    await page.getByRole("button", { name: "Check again", exact: true }).click();
+    await page.getByRole("heading", { name: "We couldn't check your balance", exact: true }).waitFor();
+    assert.equal(await page.evaluate(() => window.hexTestWallet.calls.length), readsBefore, "Wrong-chain wallet must not read balances");
+    await visibleWorkspace(page, false);
+    // A completely stalled HTTP endpoint must also leave time for wallet recovery.
+    await page.evaluate(() => { window.hexTestWallet.chainReply = null; });
+    closeRpc = false;
+    hangRpc = true;
+    const started = Date.now();
+    await page.getByRole("button", { name: "Check again", exact: true }).click();
+    await visibleWorkspace(page, true);
+    const elapsed = Date.now() - started;
+    assert.ok(elapsed < 12000, `Wallet fallback took ${elapsed}ms`);
+    const requests = await page.evaluate(() => window.hexTestWallet.requests);
+    assert.equal(requests.some(method => /sign|sendTransaction/i.test(method)), false);
+    hangRpc = false;
+    for (const held of heldRpc.splice(0)) await held.route.fulfill({ json: held.json }).catch(() => {});
+    balance = 10000n;
+    observations.push({ name: "closed/stalled public RPC recovers through wallet; zero balance, metadata and actual chain are enforced", elapsed, calls, requests, passed: true });
+    await page.close();
+  }
 
   if (tokenChecks && !unavailable) {
     console.log("Checking stalled RPC, cancellation and offline recovery");
