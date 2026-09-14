@@ -17,9 +17,9 @@ const nokiaBody = localFont({
   adjustFontFallback: false,
 });
 
-const title = "HexOnion | Hex Encoder & Decoder";
+const title = "HexOnion | Hex Tools & Private Message Links";
 const description =
-  "Encode text to hex, decode Bitcoin bytes, and discover readable messages with HexOnion. Conversion runs locally in your browser.";
+  "Convert text and inspect Bitcoin bytes with the local hex tool, or use Dead drop to create an encrypted message link that expires after 24 hours.";
 
 export const metadata: Metadata = {
   title,

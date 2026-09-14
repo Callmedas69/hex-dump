@@ -7,7 +7,7 @@ test("dead-drop API contract keeps secrets server-side", async () => {
   const get = await readFile(new URL("../app/api/drops/[id]/route.ts", import.meta.url), "utf8");
   assert.match(post, /Bearer/);
   assert.match(post, /no-store/);
-  assert.match(post, /MAX_PLAINTEXT_BYTES/);
+  assert.match(post, /MAX_ENVELOPE_BYTES/);
   assert.match(post, /idempotencyKey/);
   assert.doesNotMatch(get, /key|plaintext/i);
   assert.match(get, /no-store/);

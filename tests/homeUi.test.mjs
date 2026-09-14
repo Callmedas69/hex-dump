@@ -2,15 +2,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-test("homepage presents public X and private Onion paths in plain language", async () => {
+test("homepage keeps the converter gated and explains the separate dead-drop entry", async () => {
   const ui = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
-  assert.match(ui, /Share encoded hex on X/);
-  assert.match(ui, /share the result publicly on X/);
-  assert.match(ui, /Send a private message through the Onion network/);
-  assert.match(ui, /encrypt it in your browser/);
-  assert.match(ui, /sender needs USDG access/);
-  assert.match(ui, /href="#hex-workspace"/);
-  assert.match(ui, /href="\/dead-drop"/);
+  const header = await readFile(new URL("../components/TerminalHeader.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(ui, /through the Onion network/);
+  assert.match(header, /href="\/dead-drop"/);
+  assert.match(header, /Work with hex\. Share private messages\./);
+  assert.match(header, /no wallet needed/);
+  assert.doesNotMatch(header, /access\.enterWorkspace|hello-example|CAPABILITY/);
+  assert.match(ui, /<SecurityGate/);
   assert.match(ui, /setFormat\(full \? "dump" : "raw"\)/);
   assert.match(ui, /useState<"raw" \| "dump">\("raw"\)/);
 });

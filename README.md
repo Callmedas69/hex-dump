@@ -1,8 +1,8 @@
 # HexOnion
 
-A Bitcoin byte inspector with text-to-hex encoding, ASCII/UTF-8 decoding, readable text discovery, and a meme-token access gate. The byte grid follows the [original screenshot](agent-plans/references/bitcoin-hex-dump-inspiration.png).
+Two browser tools: a hex encoder/decoder for text and Bitcoin byte inspection, and Dead drop for encrypted message links that expire after 24 hours. The hex converter uses a client-side token holding gate; Dead drop requires an invitation code to create a link and only the complete link to read it. Hex is reversible encoding: anyone can decode it, so it does not keep a message secret. The byte grid follows the [original screenshot](agent-plans/references/bitcoin-hex-dump-inspiration.png).
 
-The app and share PNG retain the [green LCD reference](agent-plans/references/lcd-style-inspiration.png) palette: olive surfaces, near-black text, square controls, and a subtle static pixel grid. The front page uses an agent-inspired field terminal with command prompts, session details, and wallet/network/holding checks. The pixel-hand image is no longer displayed. Titles use `public/Nokian_title.ttf`; body text uses `public/nokiafc22-body.ttf`, including the wallet UI and PNG export. Encode exports remain hex-only.
+The app and share PNG retain the [green LCD reference](agent-plans/references/lcd-style-inspiration.png) palette: olive surfaces, near-black text, square controls, and a subtle static pixel grid. The homepage introduces both tools with **Explore hex tool** and **Open Dead drop** entry points. The hex section contains the Hello example, encode/decode actions, **Hex tool access details**, and a read-only Bitcoin Genesis example that needs no wallet. Detailed private-sharing instructions stay on the Dead drop page. Titles use `public/Nokian_title.ttf`; body text uses `public/nokiafc22-body.ttf`, including the wallet UI and PNG export. Encode exports omit the original plaintext.
 
 ## Local development
 
@@ -23,7 +23,7 @@ RainbowKit connects injected wallets without a WalletConnect project ID. Configu
 
 ## Production token policy
 
-Set every `NEXT_PUBLIC_MEME_TOKEN_*` value before building. The only supported network is **Robinhood Chain mainnet (4663)**. A missing, invalid, or unsupported production policy keeps the workspace locked. Visitors cannot change the gating token. To replace USDG with the final token, change the address, symbol, decimals, and raw threshold in Vercel and redeploy; no application code change is required.
+Set every `NEXT_PUBLIC_MEME_TOKEN_*` value before building. The only supported network is **Robinhood Chain mainnet (4663)**. A missing, invalid, or unsupported production policy keeps the workspace locked and shows **Access unavailable** without a futile wallet-connection prompt. The read-only example stays available. Visitors cannot change the gating token. To replace USDG with the final token, change the address, symbol, decimals, and raw threshold in Vercel and redeploy; no application code change is required.
 
 Balances are compared as bigint values in the smallest token unit. A positive minimum is inclusive; a zero minimum still requires a positive balance. The gate refreshes every 30 seconds, on focus, and on reconnect. Account/network changes select a new query; disconnects and failed checks revoke the displayed workspace.
 
@@ -31,7 +31,9 @@ This is a **client UI access gate**. Local conversion code is shipped to the bro
 
 ## Conversion
 
-To use the encoder, run `npm run dev` and open the local URL printed in the terminal. Connect a wallet holding at least 0.01 USDG on Robinhood Chain, or use the explicit development sandbox described above. Choose **Encode text → hex**, then replace the **YOUR TEXT** field with your message. The byte grid and **ENCODED HEX** update as you type; for example, `Hello` becomes `48 65 6c 6c 6f`. Use **Copy** to copy the result or **Share result** to preview the text and 16:9 image.
+Run `npm run dev` and open the local URL printed in the terminal. Choose **Encode text** or **Decode hex**, then follow **Check wallet access**. Development requires at least 0.01 USDG on Robinhood Chain, or the explicit development sandbox described above; production shows its configured requirement. The balance check does not transfer funds. After access is granted, the selected mode opens and the input receives focus. Wallet controls remain available in the verified-access banner.
+
+In Encode mode, replace **Your message** with your text. The byte grid and **ENCODED HEX** update as you type; for example, `Hello` becomes `48 65 6c 6c 6f`. Use **Copy output** or **Preview sharing** to review the text and 16:9 image. Decode mode explains ASCII, UTF-8 and row positions next to the controls. **Load Bitcoin example** replaces the inputs with the Genesis example and selects Decode; **Clear** clears only the active input. Switching modes and temporary access failures preserve both drafts.
 
 - Encode uses UTF-8, including emoji and Unicode.
 - Raw hex accepts whitespace and preserves leading zero bytes.
@@ -48,7 +50,7 @@ GSAP handles the command entry, staged terminal details, activity bars, and work
 
 The share dialog freezes the selected bytes and generates a **1600 × 900 PNG**. The preview is the exact exported image. Decode cards pair readable text with source hex and highlight selected bytes. Both modes preserve offsets and label excerpts.
 
-**Encode sharing:** the PNG contains a hex grid without the original plaintext. Post text contains only space-separated hex bytes and is read-only in the preview; edit the source message in the encoder to regenerate it. Posts longer than 93 bytes use a complete-byte excerpt, disclosed in the preview, to fit X's 280-character limit. Decode sharing retains its readable-text panel and editable caption.
+**Encode sharing:** the PNG contains a hex grid without the original plaintext. The current post text contains space-separated hex bytes followed by a decode link and is read-only in the preview; edit the source message in the encoder to regenerate it. Long messages use a complete-byte excerpt to fit X's 280-character limit, including the link. The existing link footer is preserved by the frontpage UX changes. Decode sharing retains its readable-text panel and editable caption. Sharing on X is public, and hex can be decoded by anyone.
 
 **Without X credentials:** download the PNG, copy/edit the post text, and open the X composer. Attach the PNG manually. Opening the composer never reports a post as published.
 
@@ -71,6 +73,22 @@ npm run build
 
 Tests cover canonical Genesis bytes/hashes, codec edge cases, gate policy, weighted X text length, image validation, mocked media/post ordering and failures, OAuth state handling, and duplicate submissions.
 
+The focused production-browser checks are in `tests/browser/homepage.mjs`. They cover visible entry destinations, keyboard focus, mode/draft preservation, wallet network changes, RPC and metadata failures, input feedback, public sharing previews and responsive layouts. The test supplies its own wallet and RPC responses; it never signs, transfers tokens or posts to X.
+
+With Playwright available, start a local production server and run:
+
+```sh
+npm run start -- --port 3100
+# In another terminal, against an unconfigured production build:
+node tests/browser/homepage.mjs --unavailable
+```
+
+For the granted-access pass, build an isolated local configuration with symbol `USDG`, six decimals, chain ID `4663`, minimum raw balance `10000` and the USDG address documented above, then run the script without `--unavailable`. Set `HEX_TEST_URL` for another server URL, `PLAYWRIGHT_BROWSERS_PATH` for a browser cache, or `PLAYWRIGHT_MODULE_URL` to a file URL pointing at an existing Playwright installation. Browser evidence and the distinction between simulated and real checks are in the [frontpage fix verification record](docs/audits/2026-09-14_frontpage-fix-verification.md).
+
 The installed RainbowKit dependency chain imports optional Coinbase x402 peers during Next.js bundling. Explicit `@x402/*` dependencies satisfy those imports; the app does not initiate blockchain payments.
+
+The homepage exposes `/dead-drop` through the Tools navigation and its own tool choice, independently of the hex converter's wallet gate. Dead drop has an invitation-code → message → share-link flow. Recipients use `/dead-drop/[id]#key` without a wallet. The complete link grants access to its encrypted message for 24 hours; opening it does not delete it. The key cannot be recovered if the sender loses the link. This route does not establish deployment or Tor-service availability.
+
+Run `node tests/browser/dead-drop.mjs` against the local production server for sender/recipient flows, clipboard fallback, UTF-8 limits, retry recovery, responsive layouts and hydration checks. It uses actual browser encryption with intercepted API calls and creates no live messages. The Node tests also run the actual API handlers with simulated database dependencies. Live Neon persistence tests require `DATABASE_URL` and otherwise skip. See the [dead-drop fix verification](docs/audits/2026-09-14_dead-drop-fix-verification.md).
 
 Manual browser checks cover desktop/mobile layouts, Unicode round trips, offset preservation, invalid/incomplete input, byte selection, modal dismissal, and the 16:9 export. Live wallet balance transitions and live X posting still require configured accounts and API credentials.

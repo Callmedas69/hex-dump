@@ -1,0 +1,13 @@
+{
+  "scope": "Mocked deposit/retrieval API with actual browser encryption. No real service writes, wallet, or Tor.",
+  "sendCalls": 1,
+  "senderUrl": "http://localhost:3100/dead-drop",
+  "senderError": "This link is missing the key needed to read the message.",
+  "clipboardNotice": "Clipboard unavailable. Copy the link manually.",
+  "fullLinkVisibleForManualCopy": false,
+  "recipientIntro": "Write a private message here. It is encrypted in your browser before it is sent. Share the HTTPS link in any browser, or share the Onion link with someone using Tor Browser.",
+  "recipientDecryptionPassed": true,
+  "errors": [
+    "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+  ]
+}

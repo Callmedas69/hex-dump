@@ -1,0 +1,76 @@
+[
+  {
+    "name": "layout",
+    "width": 320,
+    "documentWidth": 320,
+    "actionBottom": 671.171875,
+    "actionHeight": 44,
+    "unavailable": false
+  },
+  {
+    "name": "layout",
+    "width": 390,
+    "documentWidth": 390,
+    "actionBottom": 580.796875,
+    "actionHeight": 44,
+    "unavailable": false
+  },
+  {
+    "name": "layout",
+    "width": 768,
+    "documentWidth": 768,
+    "actionBottom": 574.171875,
+    "actionHeight": 44,
+    "unavailable": false
+  },
+  {
+    "name": "layout",
+    "width": 1440,
+    "documentWidth": 1440,
+    "actionBottom": 580.75,
+    "actionHeight": 44,
+    "unavailable": false
+  },
+  {
+    "name": "legacy fragment and reduced motion",
+    "passed": true
+  },
+  {
+    "name": "200% zoom equivalent reflow",
+    "cssViewport": "720x500",
+    "passed": true
+  },
+  {
+    "name": "shared CSS dead-drop smoke",
+    "passed": true
+  },
+  {
+    "name": "access, draft, workspace and sharing transitions",
+    "passed": true,
+    "imageSize": [
+      1600,
+      900
+    ],
+    "walletRequests": [
+      "eth_accounts",
+      "eth_chainId",
+      "wallet_requestPermissions",
+      "eth_requestAccounts",
+      "eth_chainId",
+      "wallet_switchEthereumChain",
+      "eth_chainId"
+    ]
+  },
+  {
+    "name": "network",
+    "postCount": 0,
+    "rpcMethods": [
+      "eth_call"
+    ],
+    "errors": [],
+    "intentionallyBlockedExternalResources": [
+      "https://pulse.walletconnect.org/e",
+      "https://api.web3modal.org/appkit/v1/config"
+    ]
+  }
+]

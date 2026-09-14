@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { decodeAscii, decodeUtf8, discoverTextRuns, encodeText, formatDump, parseOffsetDump, parseRawHex, toHex, type ParsedHex } from "../lib/hexCodec";
@@ -9,15 +8,23 @@ import { GENESIS_BLOCK_HEX, GENESIS_MESSAGE } from "../lib/fixtures/bitcoinGenes
 import { SecurityGate } from "../components/SecurityGate";
 import ShareDialog from "../components/ShareDialog";
 import { TerminalHeader } from "../components/TerminalHeader";
+import { HexExample } from "../components/HexExample";
+import { outputHelp, workspaceStatus } from "../lib/workspacePresentation";
 import { Providers } from "./providers";
 
 gsap.registerPlugin(useGSAP);
 const PAGE_BYTES = 512;
 
-function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) {
+type ConversionMode = "encode" | "decode";
+
+function HexWorkspace({ active, motion, mode, setMode }: {
+  active: boolean;
+  motion: boolean;
+  mode: ConversionMode;
+  setMode: (mode: ConversionMode) => void;
+}) {
   const root = useRef<HTMLElement>(null);
   const audio = useRef<AudioContext | null>(null);
-  const [mode, setMode] = useState<"encode" | "decode">("encode");
   const [text, setText] = useState(GENESIS_MESSAGE);
   const [hex, setHex] = useState(() => toHex(parseRawHex(GENESIS_BLOCK_HEX).bytes));
   const [format, setFormat] = useState<"raw" | "dump">("raw");
@@ -82,23 +89,23 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
   return (
     <section ref={root} className="workspace" id="hex-workspace">
       <div className="workspace-bar reveal"><span><span className="status-square" aria-hidden="true" /> HEXONION WORKSPACE / SESSION ACTIVE</span><button type="button" className="small" aria-pressed={sound} onClick={() => setSound(!sound)}>Sound {sound ? "on" : "off"}</button></div>
-      <div className="tabs reveal" role="tablist" aria-label="Conversion mode">
-        <button type="button" role="tab" aria-selected={mode === "decode"} className={mode === "decode" ? "active" : ""} onClick={() => { setMode("decode"); resetSelection(); }}>Decode hex → text</button>
-        <button type="button" role="tab" aria-selected={mode === "encode"} className={mode === "encode" ? "active" : ""} onClick={() => { setMode("encode"); resetSelection(); }}>Encode text → hex</button>
+      <div className="tabs reveal" role="group" aria-label="Conversion mode">
+        <button type="button" aria-pressed={mode === "encode"} className={mode === "encode" ? "active" : ""} onClick={() => { setMode("encode"); resetSelection(); }}>Encode text → hex</button>
+        <button type="button" aria-pressed={mode === "decode"} className={mode === "decode" ? "active" : ""} onClick={() => { setMode("decode"); resetSelection(); }}>Decode hex → text</button>
       </div>
       <div className="input-area reveal">
         <div className="panel-head">
-          <label htmlFor="hex-input"><span className="panel-index">01</span> {mode === "encode" ? "YOUR TEXT" : "PASTE BITCOIN BYTES"}</label>
-          {mode === "decode" && <label className="format-label">Input format <select aria-label="Input format" value={format} onChange={event => { setFormat(event.target.value as "raw" | "dump"); resetSelection(); }}><option value="raw">Raw hex</option><option value="dump">Offset dump</option></select></label>}
+          <label htmlFor="hex-input"><span className="panel-index">01</span> {mode === "encode" ? "Your message" : "Paste hex data"}</label>
+          {mode === "decode" && <label className="format-label">Input format <select aria-label="Input format" value={format} onChange={event => { setFormat(event.target.value as "raw" | "dump"); resetSelection(); }}><option value="raw">Hex pairs (raw hex)</option><option value="dump">Hex with byte positions (offset dump)</option></select></label>}
         </div>
         <textarea id="hex-input" aria-describedby="input-help" spellCheck={false} value={mode === "encode" ? text : hex} onChange={event => { if (mode === "encode") setText(event.target.value); else setHex(event.target.value); resetSelection(); blip(); }} />
-        <div className="input-footer"><p id="input-help">{mode === "encode" ? "Text becomes UTF-8 bytes. Emoji and Unicode are supported." : "Paste raw bytes or an offset dump. Offsets are labels, not payload."} · 64 KiB maximum.</p><div className="preset-actions"><button type="button" onClick={() => preset(true)}>Genesis block</button><button type="button" onClick={() => preset(false)}>Message only</button></div></div>
+        <div className="input-footer"><p id="input-help">{mode === "encode" ? "Text becomes UTF-8 bytes, including emoji and international characters. The result updates as you type." : "Paste hex pairs, such as 48 65 6C 6C 6F. For an offset dump, row addresses show byte positions and are not part of your data."} Maximum 65,536 bytes (64 KiB).</p><div className="preset-actions"><button type="button" onClick={() => preset(true)}>Try the Genesis block</button><button type="button" onClick={() => preset(false)}>Try its headline</button></div></div>
       </div>
       {parsed.error && <p className="error" role="alert">{parsed.error}</p>}
       {parsed.warning && <p className="warning" role="status">{parsed.warning} Complete the final byte before sharing.</p>}
       <div className="inspector reveal">
         <section className="byte-panel" aria-label="Hex byte grid">
-          <div className="panel-head"><span><span className="panel-index">02</span> BYTE GRID</span><span>{parsed.bytes.length.toLocaleString()} bytes</span></div>
+          <div className="panel-head"><span><span className="panel-index">02</span> Byte inspector · each pair is one byte</span><span>{parsed.bytes.length.toLocaleString()} bytes</span></div>
           <div className="byte-scroll" tabIndex={0} aria-label="Scrollable hex bytes">
             {rowStarts.map(start => <div className="byte-row" key={start}><span className="offset">{(parsed.baseOffset + start).toString(16).padStart(8, "0").toUpperCase()}</span>{Array.from(parsed.bytes.slice(start, start + 16), (byte, index) => {
               const active = selected && start + index >= selected.start && start + index < selected.end;
@@ -112,14 +119,14 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
           <div className="panel-head"><span><span className="panel-index">03</span> {mode === "encode" ? "ENCODED HEX" : "DECODED OUTPUT"}</span><button type="button" className="small" disabled={!output.text || !!parsed.error} onClick={async () => {
             try { await navigator.clipboard.writeText(output.text); setNotice("Output copied."); } catch { setNotice("Clipboard unavailable. Select the output and copy it manually."); }
           }}>Copy output</button></div>
-          {mode === "decode" && <div className="viewtabs" aria-label="Output view">{(["ascii", "utf8", "dump"] as const).map(item => <button type="button" key={item} aria-pressed={view === item} className={view === item ? "active" : ""} onClick={() => setView(item)}>{item === "ascii" ? "ASCII" : item === "utf8" ? "UTF-8" : "Hex dump"}</button>)}</div>}
+          {mode === "decode" && <div className="viewtabs" role="group" aria-label="Output view">{(["ascii", "utf8", "dump"] as const).map(item => <button type="button" key={item} aria-pressed={view === item} className={view === item ? "active" : ""} onClick={() => setView(item)}>{item === "ascii" ? "Basic characters (ASCII)" : item === "utf8" ? "Text including emoji (UTF-8)" : "Hex dump"}</button>)}</div>}
           {output.error ? <p className="error output-error" role="status">{output.error}</p> : <pre className={view === "dump" && mode === "decode" ? "dump-output" : ""}>{output.text || "Waiting for bytes…"}</pre>}
-          <p className="output-note">{mode === "encode" ? "Two hexadecimal digits represent one byte." : "ASCII inspection shows non-printable bytes as dots. Original bytes are preserved."}</p>
+          <p className="output-note">{outputHelp(mode, view)}</p>
         </section>
       </div>
-      <div className="buffer-status"><span>BUFFER / {parsed.bytes.length.toLocaleString()} OF 65,536 BYTES</span><meter min={0} max={65536} value={parsed.bytes.length} aria-label="Input buffer usage" /><span>{parsed.error ? "INPUT REJECTED" : parsed.warning ? "INCOMPLETE BYTE" : "AWAITING COMMAND"}<span className="terminal-cursor" aria-hidden="true" /></span></div>
-      {mode === "decode" && <section className="discovery reveal" aria-label="Readable text discovery"><div className="discovery-title"><span className="eyebrow">READABLE TEXT DISCOVERY</span><strong>{runs.length} candidate{runs.length === 1 ? "" : "s"} found</strong><p>Choose a passage to highlight its bytes. Binary data can also look like text.</p></div><div className="candidate-list">{runs.map(run => <button type="button" key={run.start} aria-pressed={selected?.start === run.start} className={selected?.start === run.start ? "active" : ""} onClick={() => { setSelectedStart(run.start); setPage(Math.floor(run.start / PAGE_BYTES)); }}><span>{(parsed.baseOffset + run.start).toString(16).padStart(8, "0")}–{(parsed.baseOffset + run.end - 1).toString(16).padStart(8, "0")}</span><span className="candidate-text">{run.text}</span></button>)}</div></section>}
-      <div className="actions"><span className="notice" role="status">{notice}</span><button type="button" onClick={() => { if (mode === "encode") setText(""); else setHex(""); resetSelection(); }}>Clear</button><button type="button" onClick={() => { setText(GENESIS_MESSAGE); preset(true); }}>Reset</button><button type="button" className="primary" disabled={!parsed.bytes.length || !!parsed.error || !!parsed.warning} onClick={() => setShare(true)}>Share result ↗</button></div>
+      <div className="buffer-status"><span>BUFFER / {parsed.bytes.length.toLocaleString()} OF 65,536 BYTES</span><meter min={0} max={65536} value={parsed.bytes.length} aria-label="Input buffer usage" /><span role="status">{workspaceStatus({ mode, byteCount: parsed.bytes.length, error: parsed.error, warning: parsed.warning, outputError: output.error })}<span className="terminal-cursor" aria-hidden="true" /></span></div>
+      {mode === "decode" && <section className="discovery reveal" aria-label="Readable text discovery"><div className="discovery-title"><span className="eyebrow">READABLE PASSAGES FOUND</span><strong>{runs.length} possible passage{runs.length === 1 ? "" : "s"}</strong><p>Choose a passage to highlight its bytes. Binary data can also look like text.</p></div><div className="candidate-list">{runs.map(run => <button type="button" key={run.start} aria-pressed={selected?.start === run.start} className={selected?.start === run.start ? "active" : ""} onClick={() => { setSelectedStart(run.start); setPage(Math.floor(run.start / PAGE_BYTES)); }}><span>{(parsed.baseOffset + run.start).toString(16).padStart(8, "0")}–{(parsed.baseOffset + run.end - 1).toString(16).padStart(8, "0")}</span><span className="candidate-text">{run.text}</span></button>)}</div></section>}
+      <div className="actions"><span className="notice" role="status">{notice}</span><button type="button" onClick={() => { if (mode === "encode") setText(""); else setHex(""); resetSelection(); }}>Clear</button><button type="button" onClick={() => { setText(GENESIS_MESSAGE); preset(true); }}>Load Bitcoin example</button><button type="button" className="primary" disabled={!parsed.bytes.length || !!parsed.error || !!parsed.warning} onClick={() => setShare(true)}>Preview sharing</button></div>
       {active && share && <ShareDialog bytes={parsed.bytes} mode={mode} baseOffset={parsed.baseOffset} selection={selected} onClose={() => setShare(false)} />}
     </section>
   );
@@ -127,5 +134,56 @@ function HexWorkspace({ active, motion }: { active: boolean; motion: boolean }) 
 
 export default function Home() {
   const [motion, setMotion] = useState(true);
-  return <Providers><main className="shell" data-motion={motion ? "on" : "off"}><TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} /><section className="share-choices" aria-labelledby="share-choices-title"><div className="share-choices-intro"><span className="eyebrow">CHOOSE YOUR PATH</span><h2 id="share-choices-title">Share it your way</h2><p>Turn words into Bitcoin hex in your browser. Then choose whether to share the result publicly on X or privately through the Onion network.</p></div><div className="share-choice-grid"><article className="share-choice"><span className="eyebrow">PUBLIC / X</span><h3>Share encoded hex on X</h3><p>Turn your text into hexadecimal, review the image, and share it publicly on X. USDG access required.</p><Link className="primary" href="#hex-workspace">Open hex encoder ↘</Link></article><article className="share-choice"><span className="eyebrow">PRIVATE / ONION</span><h3>Send a private message through the Onion network</h3><p>Write a message and encrypt it in your browser. The sender needs USDG access; the recipient only needs the complete link.</p><Link className="primary" href="/dead-drop">Open private dead drop ↗</Link></article></div></section><SecurityGate>{active => <HexWorkspace active={active} motion={motion} />}</SecurityGate><footer><span>HEXONION / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Text becomes bytes. Bytes reveal stories.</span></footer></main></Providers>;
+  const [mode, setMode] = useState<ConversionMode>("encode");
+  return (
+    <Providers>
+      <main className="shell home-page" data-motion={motion ? "on" : "off"}>
+        <TerminalHeader motion={motion} onToggleMotion={() => setMotion(!motion)} />
+        <SecurityGate introduction={access => <>
+          <section className="task-choices hex-introduction" aria-labelledby="hex-tool-title">
+            <span className="eyebrow">HEX TOOL / ENCODE AND DECODE</span>
+            <h2 id="hex-tool-title" tabIndex={-1}>Convert text. Inspect Bitcoin bytes.</h2>
+            <p className="hex-explanation">Hexadecimal (hex) represents data using 0–9 and A–F. Each pair is one byte. Anyone can decode it, so it does not keep a message secret.</p>
+            <div className="hello-example" aria-label="Text to hexadecimal example">
+              <span>Text <strong>Hello</strong></span><span aria-hidden="true">→</span>
+              <span>Hex <code>48 65 6C 6C 6F</code></span>
+            </div>
+            <div className="task-choice-grid">
+              <article>
+                <h3>Text to hex (encode)</h3>
+                <p>Turn a message into hexadecimal bytes. Supports emoji and international characters.</p>
+                <button type="button" onClick={() => { setMode("encode"); access.enterWorkspace(); }}>Encode text</button>
+              </article>
+              <article>
+                <h3>Hex to text (decode)</h3>
+                <p>Inspect hexadecimal data for readable passages. Some bytes are not text.</p>
+                <button type="button" onClick={() => { setMode("decode"); access.enterWorkspace(); }}>Decode hex</button>
+              </article>
+            </div>
+            <div className="hex-section-actions">
+              {access.granted && <button type="button" onClick={access.enterWorkspace}>Open hex tool</button>}
+              <a href="#bitcoin-example" onClick={event => {
+                const example = document.getElementById("bitcoin-example");
+                if (example instanceof HTMLDetailsElement) {
+                  event.preventDefault();
+                  example.open = true;
+                  example.querySelector("summary")?.focus();
+                  example.scrollIntoView({ block: "start" });
+                }
+              }}>See a Bitcoin example ↓</a>
+            </div>
+            <details className="access-details hex-access-details">
+              <summary>Hex tool access details</summary>
+              <p>{access.requirement ? `Hold ${access.requirement} on Robinhood Chain mainnet to use the converter.` : "The hex converter is temporarily unavailable because its wallet access checks are not configured."} Checking your balance does not transfer funds.</p>
+              <p>Encoding and decoding happen locally in your browser. Copy the result or preview an image to share on X.</p>
+            </details>
+          </section>
+          <HexExample />
+        </>}>
+          {active => <HexWorkspace active={active} motion={motion} mode={mode} setMode={setMode} />}
+        </SecurityGate>
+        <footer><span>HEXONION / END OF TRANSMISSION<span className="terminal-cursor" aria-hidden="true" /></span><span>Hex tools and private message links.</span></footer>
+      </main>
+    </Providers>
+  );
 }

@@ -60,7 +60,7 @@ export async function createDrop(input: { tokenHash: string; idempotencyKey: str
   return { id: String(rows[0].id), expiresAt: String(rows[0].expiresAt), duplicate: false };
 }
 
-export async function verifyInvitation(tokenHash: string) {
+export async function verifyInvitation(tokenHash: string, idempotencyKey = "") {
   const sql = getSql();
   const rows = await sql`SELECT id, token_hash AS "tokenHash", remaining_deposits AS "remainingDeposits", expires_at AS "expiresAt", revoked FROM dead_drop_invitations WHERE token_hash = ${tokenHash} LIMIT 1`;
   const row = rows[0] as { id: number; tokenHash: string; remainingDeposits: number; expiresAt: string; revoked: boolean } | undefined;
@@ -68,7 +68,12 @@ export async function verifyInvitation(tokenHash: string) {
   const left = Buffer.from(tokenHash, "hex");
   const right = Buffer.from(row.tokenHash, "hex");
   const matches = left.length === right.length && timingSafeEqual(left, right);
-  return matches && row.remainingDeposits > 0 && !row.revoked && new Date(row.expiresAt).getTime() > Date.now();
+  if (!matches || row.revoked || new Date(row.expiresAt).getTime() <= Date.now()) return false;
+  if (row.remainingDeposits > 0) return true;
+  // A lost response can consume the last slot. Only the same, still-live request may retry.
+  if (!idempotencyKey) return false;
+  const existing = await sql`SELECT id FROM dead_drops WHERE invitation_id = ${row.id} AND idempotency_key = ${idempotencyKey} AND expires_at > NOW() LIMIT 1`;
+  return !!existing[0];
 }
 
 export async function getDrop(id: string): Promise<StoredDrop | null> {

@@ -5,6 +5,9 @@ export type DeadDropEnvelope = {
 };
 
 const MAX_PLAINTEXT_BYTES = 16 * 1024;
+// Base64url expands the encrypted bytes, which include a 16-byte GCM tag.
+const MAX_CIPHERTEXT_CHARACTERS = Math.ceil((MAX_PLAINTEXT_BYTES + 16) * 4 / 3);
+export const MAX_ENVELOPE_BYTES = JSON.stringify({ v: 1, iv: "A".repeat(16), ciphertext: "A".repeat(MAX_CIPHERTEXT_CHARACTERS) }).length;
 
 function toBase64Url(bytes: Uint8Array) {
   let binary = "";
@@ -23,6 +26,7 @@ function assertEnvelope(envelope: unknown): asserts envelope is DeadDropEnvelope
   if (!envelope || typeof envelope !== "object") throw new Error("Malformed encrypted payload.");
   const value = envelope as Record<string, unknown>;
   if (value.v !== 1 || typeof value.iv !== "string" || typeof value.ciphertext !== "string") throw new Error("Malformed encrypted payload.");
+  if (value.iv.length !== 16 || value.ciphertext.length > MAX_CIPHERTEXT_CHARACTERS) throw new Error("Malformed encrypted payload.");
   const iv = fromBase64Url(value.iv);
   const ciphertext = fromBase64Url(value.ciphertext);
   if (iv.length !== 12 || ciphertext.length < 16 || ciphertext.length > MAX_PLAINTEXT_BYTES + 16) throw new Error("Malformed encrypted payload.");
@@ -49,7 +53,7 @@ export async function decryptDeadDrop(envelope: unknown, encodedKey: string) {
 
 export function validateDeadDropEnvelope(value: unknown) {
   assertEnvelope(value);
-  return value;
+  return { v: value.v, iv: value.iv, ciphertext: value.ciphertext };
 }
 
 export { MAX_PLAINTEXT_BYTES };

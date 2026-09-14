@@ -14,6 +14,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!drop) return NextResponse.json({ error: "Transmission unavailable." }, { status: 404, headers });
     return NextResponse.json({ v: drop.v, iv: drop.iv, ciphertext: drop.ciphertext, expiresAt: drop.expiresAt }, { headers });
   } catch {
-    return NextResponse.json({ error: "Transmission unavailable." }, { status: 404, headers });
+    return NextResponse.json({ error: "Message service temporarily unavailable." }, { status: 503, headers });
   }
 }

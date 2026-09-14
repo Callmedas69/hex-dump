@@ -107,7 +107,7 @@ export default function ShareDialog({ bytes, mode, baseOffset = 0, selection, on
   return (
     <dialog ref={dialog} className={styles.dialog} aria-labelledby="share-title" onCancel={event => { event.preventDefault(); if (!busy) onClose(); }}>
       <div className={styles.heading}>
-        <div><span className={styles.eyebrow}>SHARE YOUR DISCOVERY</span><h2 id="share-title">From bytes to a story.</h2></div>
+        <div><span className={styles.eyebrow}>REVIEW BEFORE SHARING</span><h2 id="share-title">{snapshot.mode === "encode" ? "Preview your hex image" : "Preview your decoded result"}</h2></div>
         <button type="button" onClick={onClose} disabled={busy} aria-label="Close share preview">×</button>
       </div>
       <div className={styles.preview} aria-busy={!image}>
@@ -116,6 +116,7 @@ export default function ShareDialog({ bytes, mode, baseOffset = 0, selection, on
         {image ? <img src={image.url} width={1600} height={900} alt={snapshot.mode === "encode" ? "Encoded result shown as hexadecimal bytes" : "Decode result with a hex byte grid and its readable text"} /> : <p>Preparing your image…</p>}
       </div>
       <p className={styles.note}>1600 × 900 PNG · Your selected bytes are captured in this preview.</p>
+      <p className={styles.note}>Sharing on X is public. Anyone can decode hex. Review the image and post text before sharing.</p>
       <label className={styles.label} htmlFor="share-post-text">Post text <span>{postLength(text)} / 280</span></label>
       <textarea id="share-post-text" value={text} maxLength={10000} readOnly={snapshot.mode === "encode"} disabled={busy || !!postedUrl} onChange={event => { setText(event.target.value); requestId.current = ""; }} rows={3} />
       {snapshot.mode === "encode" && <p className={styles.note}>The post includes the encoded hex and a link back to HEXONION. Edit your message in the encoder to change the result.</p>}
@@ -133,7 +134,7 @@ export default function ShareDialog({ bytes, mode, baseOffset = 0, selection, on
           if (tab) { tab.opener = null; setMessage("PNG downloaded and X composer opened. Attach the downloaded image before posting."); } else setError("Allow popups to open the X composer.");
         }}>Download PNG + open X</button>
       </div>
-      <p className={styles.note}>To share on X, download the PNG, open the composer, and attach the downloaded image to your post. Direct posting is available after X is connected.</p>
+      <p className={styles.note}>To share on X, download the image, open X, and attach the downloaded image before posting.</p>
       <div className={styles.connection}>
         {connection?.configured ? connection.connected ? <>
           <span>X connected · Post the reviewed text and image together.</span>
@@ -141,7 +142,7 @@ export default function ShareDialog({ bytes, mode, baseOffset = 0, selection, on
         </> : <>
           <span>Connect X to post the text and image together.</span>
           <div className={styles.actions}><button type="button" disabled={busy} onClick={connectX}>Connect X</button><button type="button" disabled={busy} onClick={checkConnection}>Check connection</button></div>
-        </> : <span>{connection ? "Direct posting is unavailable until X is connected. Use the download and composer option above." : "Checking X connection…"}</span>}
+        </> : <span>{connection ? "Direct posting is unavailable. Download the image and open X instead." : "Checking X connection…"}</span>}
       </div>
       <div aria-live="polite">{message && <p className={styles.success}>{message}</p>}{postedUrl && <a href={postedUrl} target="_blank" rel="noopener noreferrer">View your post on X ↗</a>}</div>
       {error && <p role="alert" className={styles.error}>{error}</p>}

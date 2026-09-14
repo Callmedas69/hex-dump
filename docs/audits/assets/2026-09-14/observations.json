@@ -1,0 +1,142 @@
+[
+  {
+    "name": "desktop",
+    "before": {
+      "scrollY": 0,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": " FIELD TERMINAL\nMotion on\n─ □ ×\n\nC:\\HEXONION> RUN CODEC.EXE\n\nHEXONION\n\nENCODER / DECODER\n\nMessages hide in plain sight.\nTurn words into bytes. Read between the lines.\n\nSESSION BRIEF\nNETWORK\nROBINHOOD MAINNET\nPROCESSING\nLOCAL / IN BROWSER\nCAPABILITY\nENCODE · DECODE\nConnect Wallet\n01 — ACCESS\n02 — INSPECT\n03 — TRANSMIT\nCHOOSE YOUR PATH\nShare it your way\n\nTurn words into Bitcoin hex in your browser. Then choose whether to share the result publicly on X or privately through the Onion network.\n\nPUBLIC / X\nShare encoded hex on X\n\nTurn your text into hexadecimal, review the image, and share it publicly on X. USDG access required.\n\nOpen hex encoder ↘\nPRIVATE / ONION\nSend a private message through the Onion network\n\nWrite a message and encrypt it in your browser. The sender needs USDG access; the recipient only needs the complete link.\n\nOpen private dead drop ↗\nACCESS CONTROL / TOKEN HOLDING\nIDENTIFY YOURSELF\nToken access\n\nThe production meme token has not been configured yet.\n\nConnect Wallet\n01 / WALLET\nAWAITING CONNECTION\n02 / NETWORK\nAWAITING WALLET\n03 / TOKEN HOLDING\nAWAITING NETWORK\nHEXONION / END OF TRANSMISSION\nText becomes bytes. Bytes reveal stories.",
+      "sections": [
+        {
+          "class": "terminal-header",
+          "top": 28,
+          "height": 395.359375
+        },
+        {
+          "class": "share-choices",
+          "top": 451.359375,
+          "height": 346.265625
+        },
+        {
+          "class": "gate",
+          "top": 815.625,
+          "height": 246.1875
+        }
+      ],
+      "cta": [
+        {
+          "text": "Open hex encoder ↘",
+          "top": 731.625,
+          "height": 24
+        },
+        {
+          "text": "Open private dead drop ↗",
+          "top": 731.625,
+          "height": 24
+        }
+      ]
+    },
+    "after": {
+      "url": "http://localhost:3100/#hex-workspace",
+      "scrollY": 0,
+      "targetVisible": false,
+      "focused": "Open hex encoder ↘"
+    },
+    "errors": []
+  },
+  {
+    "name": "dead-drop",
+    "text": "HEXONION / SECRET DEAD DROP\nHTTPS / WEB\nMotion on\n\n$ open private message\n\nSECRET DEAD DROP\n\nWrite a private message here. It is encrypted in your browser before it is sent. Share the HTTPS link in any browser, or share the Onion link with someone using Tor Browser.\n\n← Home / Bitcoin hex\nUsing an Onion link? Open it in Tor Browser. Keep the complete link, including everything after #; that is the decryption key.\nUSDG HOLDER TOOL\nCREATE INVITATION CODE\n\nSign a one-time wallet challenge to create an access code. Each message slot allows one encrypted message; the complete dead-drop link authorizes retrieval.\n\nConnect Wallet\nMessage slots\nValid days\nCreate invitation code\n\nINVITATION CODE\nFOR SENDING\nYOUR MESSAGE / 16 KiB UTF-8 MAX\n0 bytes\nSend message\nPreview encrypted data\n\nMessages expire 24 hours after sending.\n\nWallet signing is only needed to create an invitation code. The recipient opens the complete link in a browser or Tor Browser. Only the encrypted message is sent to the server; the key stays in the complete link. Expiration removes the service record but cannot guarantee forensic erasure from every storage layer.",
+    "errors": []
+  },
+  {
+    "name": "mobile",
+    "before": {
+      "scrollY": 0,
+      "width": 390,
+      "scrollWidth": 390,
+      "text": " FIELD TERMINAL\nMotion on\n─ □ ×\n\nC:\\HEXONION> RUN CODEC.EXE\n\nHEXONION\n\nENCODER / DECODER\n\nMessages hide in plain sight.\nTurn words into bytes. Read between the lines.\n\nSESSION BRIEF\nNETWORK\nROBINHOOD MAINNET\nPROCESSING\nLOCAL / IN BROWSER\nCAPABILITY\nENCODE · DECODE\nConnect Wallet\n01 — ACCESS\n02 — INSPECT\n03 — TRANSMIT\nCHOOSE YOUR PATH\nShare it your way\n\nTurn words into Bitcoin hex in your browser. Then choose whether to share the result publicly on X or privately through the Onion network.\n\nPUBLIC / X\nShare encoded hex on X\n\nTurn your text into hexadecimal, review the image, and share it publicly on X. USDG access required.\n\nOpen hex encoder ↘\nPRIVATE / ONION\nSend a private message through the Onion network\n\nWrite a message and encrypt it in your browser. The sender needs USDG access; the recipient only needs the complete link.\n\nOpen private dead drop ↗\nACCESS CONTROL / TOKEN HOLDING\nIDENTIFY YOURSELF\nToken access\n\nThe production meme token has not been configured yet.\n\nConnect Wallet\n01 / WALLET\nAWAITING CONNECTION\n02 / NETWORK\nAWAITING WALLET\n03 / TOKEN HOLDING\nAWAITING NETWORK\nHEXONION / END OF TRANSMISSION\nText becomes bytes. Bytes reveal stories.",
+      "sections": [
+        {
+          "class": "terminal-header",
+          "top": 14,
+          "height": 601.71875
+        },
+        {
+          "class": "share-choices",
+          "top": 643.71875,
+          "height": 681.5
+        },
+        {
+          "class": "gate",
+          "top": 1343.21875,
+          "height": 337.78125
+        }
+      ],
+      "cta": [
+        {
+          "text": "Open hex encoder ↘",
+          "top": 982.96875,
+          "height": 24
+        },
+        {
+          "text": "Open private dead drop ↗",
+          "top": 1263.21875,
+          "height": 24
+        }
+      ]
+    },
+    "after": {
+      "url": "http://localhost:3100/#hex-workspace",
+      "scrollY": 573,
+      "targetVisible": false,
+      "focused": "Open hex encoder ↘"
+    },
+    "errors": []
+  },
+  {
+    "name": "reduced",
+    "before": {
+      "scrollY": 0,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": " FIELD TERMINAL\nMotion on\n─ □ ×\n\nC:\\HEXONION> RUN CODEC.EXE\n\nHEXONION\n\nENCODER / DECODER\n\nMessages hide in plain sight.\nTurn words into bytes. Read between the lines.\n\nSESSION BRIEF\nNETWORK\nROBINHOOD MAINNET\nPROCESSING\nLOCAL / IN BROWSER\nCAPABILITY\nENCODE · DECODE\nConnect Wallet\n01 — ACCESS\n02 — INSPECT\n03 — TRANSMIT\nCHOOSE YOUR PATH\nShare it your way\n\nTurn words into Bitcoin hex in your browser. Then choose whether to share the result publicly on X or privately through the Onion network.\n\nPUBLIC / X\nShare encoded hex on X\n\nTurn your text into hexadecimal, review the image, and share it publicly on X. USDG access required.\n\nOpen hex encoder ↘\nPRIVATE / ONION\nSend a private message through the Onion network\n\nWrite a message and encrypt it in your browser. The sender needs USDG access; the recipient only needs the complete link.\n\nOpen private dead drop ↗\nACCESS CONTROL / TOKEN HOLDING\nIDENTIFY YOURSELF\nToken access\n\nThe production meme token has not been configured yet.\n\nConnect Wallet\n01 / WALLET\nAWAITING CONNECTION\n02 / NETWORK\nAWAITING WALLET\n03 / TOKEN HOLDING\nAWAITING NETWORK\nHEXONION / END OF TRANSMISSION\nText becomes bytes. Bytes reveal stories.",
+      "sections": [
+        {
+          "class": "terminal-header",
+          "top": 28,
+          "height": 395.359375
+        },
+        {
+          "class": "share-choices",
+          "top": 451.359375,
+          "height": 346.265625
+        },
+        {
+          "class": "gate",
+          "top": 815.625,
+          "height": 246.1875
+        }
+      ],
+      "cta": [
+        {
+          "text": "Open hex encoder ↘",
+          "top": 731.625,
+          "height": 24
+        },
+        {
+          "text": "Open private dead drop ↗",
+          "top": 731.625,
+          "height": 24
+        }
+      ]
+    },
+    "after": {
+      "url": "http://localhost:3100/#hex-workspace",
+      "scrollY": 0,
+      "targetVisible": false,
+      "focused": "Open hex encoder ↘"
+    },
+    "errors": []
+  }
+]
